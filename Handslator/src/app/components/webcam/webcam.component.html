@@ -1,0 +1,7 @@
+<div class="wrapper">
+  <p>{{CamErrorMsg}}</p>
+  <webcam [height]="height"
+          [width]="width"
+          (initError)="handleInitError($event)">
+  </webcam>
+</div>
