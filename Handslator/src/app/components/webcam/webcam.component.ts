@@ -1,5 +1,6 @@
 import {Component, HostListener, OnInit} from '@angular/core';
-import {WebcamInitError} from "ngx-webcam";
+import {WebcamImage, WebcamInitError, WebcamModule} from "ngx-webcam";
+import {FilesetResolver, GestureRecognizer} from "@mediapipe/tasks-vision";
 
 
 @Component({
@@ -10,9 +11,10 @@ import {WebcamInitError} from "ngx-webcam";
 })
 
 export class WebcamComponent implements OnInit {
-  CamErrorMsg="";
-  width :number;
-  height : number;
+  CamErrorMsg = "";
+  width: number;
+  height: number;
+
 
   @HostListener('window:resize', ['$event'])
   onResize() {
@@ -24,10 +26,17 @@ export class WebcamComponent implements OnInit {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
   }
-  ngOnInit() {}
+
+  ngOnInit() {
+  }
 
   handleInitError($event: WebcamInitError) {
     console.warn("Camera access was not allowed by user!");
-    this.CamErrorMsg="Camera access was not allowed by user!";
+    this.CamErrorMsg = "Camera access was not allowed by user!";
   }
+
+
 }
+requestAnimationFrame(() => {
+});
+

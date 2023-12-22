@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FilesetResolver, HandLandmarker} from "@mediapipe/tasks-vision";
-import {HAND_CONNECTIONS} from "@mediapipe/hands";
+import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@mediapipe/hands";
 
 
 @Component({
@@ -30,7 +30,6 @@ export class HandDetectionComponent implements OnInit, AfterViewInit {
     this.canvas = this.canvasElement.nativeElement;
     this.video = this.videoElement.nativeElement;
     this.canvasContext = this.canvas.getContext('2d')!;
-
     if (navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({video: true})
         .then(async (stream) => {
@@ -48,6 +47,7 @@ export class HandDetectionComponent implements OnInit, AfterViewInit {
     if (this.handLandmarker && this.video.currentTime !== this.lastVideoTime) {
       const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
       console.log(detections.landmarks);
+      this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
       this.lastVideoTime = this.video.currentTime;
     }
     requestAnimationFrame(() => {
@@ -73,5 +73,17 @@ export class HandDetectionComponent implements OnInit, AfterViewInit {
 
   }
 
+  private drawConnections(landmarks: NormalizedLandmark[][], HAND_CONNECTIONS: LandmarkConnectionArray, param3: {
+    color: string;
+    lineWidth: number
+  }) {
+
+    this.canvasContext.save();
+    this.canvasContext.fillStyle = param3.color;
+    this.canvas.width = this.video.videoWidth;
+    this.canvas.height = this.video.videoHeight;
+    this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+    // this.canvasContext.fillRect(0,0, this.canvas.height/2, this.canvas.width/2);
+  }
 }
 
