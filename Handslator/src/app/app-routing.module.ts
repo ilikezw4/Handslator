@@ -3,8 +3,8 @@ import {PreloadAllModules, RouterModule, Routes} from '@angular/router';
 import {TextOutputShortComponent} from './components/text-output/text-output.component'
 import {TextOutputLongComponent} from "./components/text-output-long/text-output-long.component";
 import {WebcamComponent} from "./components/webcam/webcam.component";
-import {DetectionComponent} from "./components/detection/detection.component";
-import {TestDetComponent} from "./components/test-det/test-det.component";
+
+
 
 const routes: Routes = [
   {
