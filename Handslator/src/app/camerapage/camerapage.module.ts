@@ -3,10 +3,10 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CamerapagePage } from './camerapage.page';
-import { ExploreContainerComponentModule } from '../../../../../../../../Users/brumi/Downloads/src/src/app/explore-container/explore-container.module';
+import { ExploreContainerComponentModule } from '../components/explore-container/explore-container.module';
 
 import { CamerapagePageRoutingModule } from './camerapage-routing.module';
-import {CameraCompComponent} from "../../../../../../../../Users/brumi/Downloads/src/src/app/camera-comp/camera-comp.component";
+import {CameraCompComponent} from "../components/camera-comp/camera-comp.component";
 import {WebcamModule} from "ngx-webcam";
 
 @NgModule({
