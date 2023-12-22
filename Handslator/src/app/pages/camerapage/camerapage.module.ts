@@ -3,11 +3,12 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CamerapagePage } from './camerapage.page';
-import { ExploreContainerComponentModule } from '../components/explore-container/explore-container.module';
+import { ExploreContainerComponentModule } from '../../explore-container/explore-container.module';
 
 import { CamerapagePageRoutingModule } from './camerapage-routing.module';
-import {CameraCompComponent} from "../components/camera-comp/camera-comp.component";
+import {WebcamComponent} from "../../components/webcam/webcam.component";
 import {WebcamModule} from "ngx-webcam";
+import {TextOutputShortComponent} from "../../components/text-output/text-output.component";
 
 @NgModule({
     imports: [
@@ -18,6 +19,6 @@ import {WebcamModule} from "ngx-webcam";
         CamerapagePageRoutingModule,
         WebcamModule
     ],
-    declarations: [CamerapagePage, CameraCompComponent]
+  declarations: [CamerapagePage, WebcamComponent, TextOutputShortComponent]
 })
 export class CamerapagePageModule {}

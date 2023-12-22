@@ -1,67 +1,28 @@
-import {NgModule} from '@angular/core';
-import {PreloadAllModules, RouterModule, Routes} from '@angular/router';
-import {TextOutputShortComponent} from './components/text-output/text-output.component'
-import {TextOutputLongComponent} from "./components/text-output-long/text-output-long.component";
-import {WebcamComponent} from "./components/webcam/webcam.component";
-
-
+import { NgModule } from '@angular/core';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: 'home',
-    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
-  },
-  {
     path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
-  }, {
-    path: 'text-output',
-    component: TextOutputShortComponent
-  }
-  , {
-    path: 'text-output-long',
-    component: TextOutputLongComponent
-  }, {
-    path: 'webcam',
-    component: WebcamComponent
-  },
-  {
-    path: 'fulltext',
-    loadChildren: () => import('./fulltext/fulltext.module').then( m => m.FulltextPageModule)
-  },
-  {
-    path: 'signinstruction',
-    loadChildren: () => import('./signinstruction/signinstruction.module').then( m => m.SigninstructionPageModule)
-  },
-  {
-    path: 'settings',
-    loadChildren: () => import('./settings/settings.module').then( m => m.SettingsPageModule)
-  },
-  {
-    path: '',
-    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+    loadChildren: () => import('./pages/tabs/tabs.module').then(m => m.TabsPageModule)
   },
   {
     path: 'camerapage',
-    loadChildren: () => import('./camerapage/camerapage.module').then( m => m.CamerapagePageModule)
+    loadChildren: () => import('./pages/camerapage/camerapage.module').then(m => m.CamerapagePageModule)
   },
   {
     path: 'infopage',
-    loadChildren: () => import('./infopage/infopage.module').then( m => m.InfopagePageModule)
+    loadChildren: () => import('./pages/infopage/infopage.module').then(m => m.InfopagePageModule)
   },
   {
     path: 'textpage',
-    loadChildren: () => import('./textpage/textpage.module').then( m => m.TextpagePageModule)
+    loadChildren: () => import('./pages/textpage/textpage.module').then(m => m.TextpagePageModule)
   }
 ];
-
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, {preloadingStrategy: PreloadAllModules})
+    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
   ],
-
   exports: [RouterModule]
 })
-export class AppRoutingModule {
-}
+export class AppRoutingModule {}

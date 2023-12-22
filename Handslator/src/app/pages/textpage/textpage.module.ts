@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { TextpagePageRoutingModule } from './textpage-routing.module';
 import { TextpagePage } from './textpage.page';
-import {ExploreContainerComponentModule} from "../components/explore-container/explore-container.module";
+import {ExploreContainerComponentModule} from "../../explore-container/explore-container.module";
 
 @NgModule({
   imports: [
