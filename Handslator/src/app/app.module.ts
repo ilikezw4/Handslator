@@ -8,9 +8,11 @@ import {TextOutputShortComponent} from "./components/text-output/text-output.com
 import {TextOutputLongComponent} from "./components/text-output-long/text-output-long.component";
 import {WebcamModule} from 'ngx-webcam';
 import {WebcamComponent} from "./components/webcam/webcam.component";
+import {DetectionComponent} from "./components/detection/detection.component";
+import {TestDetComponent} from "./components/test-det/test-det.component";
 
 @NgModule({
-  declarations: [AppComponent, TextOutputShortComponent,TextOutputLongComponent,WebcamComponent],
+  declarations: [AppComponent, TextOutputShortComponent, TextOutputLongComponent, WebcamComponent, DetectionComponent, DetectionComponent, TestDetComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,WebcamModule],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
