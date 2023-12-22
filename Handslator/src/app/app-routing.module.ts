@@ -37,6 +37,22 @@ const routes: Routes = [
   {
     path: 'settings',
     loadChildren: () => import('./settings/settings.module').then( m => m.SettingsPageModule)
+  },
+  {
+    path: '',
+    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+  },
+  {
+    path: 'camerapage',
+    loadChildren: () => import('./camerapage/camerapage.module').then( m => m.CamerapagePageModule)
+  },
+  {
+    path: 'infopage',
+    loadChildren: () => import('./infopage/infopage.module').then( m => m.InfopagePageModule)
+  },
+  {
+    path: 'textpage',
+    loadChildren: () => import('./textpage/textpage.module').then( m => m.TextpagePageModule)
   }
 ];
 
