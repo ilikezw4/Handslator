@@ -9,6 +9,7 @@ import { CamerapagePageRoutingModule } from './camerapage-routing.module';
 import {WebcamComponent} from "../../components/webcam/webcam.component";
 import {WebcamModule} from "ngx-webcam";
 import {TextOutputShortComponent} from "../../components/text-output/text-output.component";
+import {HandDetectionComponent} from "../../components/hand-detection/hand-detection.component";
 
 @NgModule({
     imports: [
@@ -19,6 +20,6 @@ import {TextOutputShortComponent} from "../../components/text-output/text-output
         CamerapagePageRoutingModule,
         WebcamModule
     ],
-  declarations: [CamerapagePage, WebcamComponent, TextOutputShortComponent]
+    declarations: [CamerapagePage, WebcamComponent, TextOutputShortComponent, HandDetectionComponent]
 })
 export class CamerapagePageModule {}

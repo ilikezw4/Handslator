@@ -78,12 +78,12 @@ export class HandDetectionComponent implements OnInit, AfterViewInit {
     lineWidth: number
   }) {
 
-    this.canvasContext.save();
+    this.canvasContext.save(); // save state
     this.canvasContext.fillStyle = param3.color;
     this.canvas.width = this.video.videoWidth;
     this.canvas.height = this.video.videoHeight;
-    this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
-    // this.canvasContext.fillRect(0,0, this.canvas.height/2, this.canvas.width/2);
+    this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
+    this.canvasContext.restore(); // restore to original state
   }
 }
 
