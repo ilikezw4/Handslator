@@ -5,5 +5,6 @@ import {Component} from '@angular/core';
   templateUrl: './text-output.component.html',
   styleUrls: ['./text-output.component.scss'],
 })
-export class TextOutputShortComponent {
+export class TextOutputComponent {
 }
+

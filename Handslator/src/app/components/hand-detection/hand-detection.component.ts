@@ -8,7 +8,7 @@ import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@me
   templateUrl: './hand-detection.component.html',
   styleUrls: ['./hand-detection.component.scss'],
 })
-export class HandDetectionComponent implements OnInit, AfterViewInit {
+export class HandDetectionComponent implements AfterViewInit {
 
   @ViewChild('video') videoElement!: ElementRef;
   @ViewChild('canvas') canvasElement!: ElementRef;
@@ -19,12 +19,7 @@ export class HandDetectionComponent implements OnInit, AfterViewInit {
   private handLandmarker!: HandLandmarker;
   private canvasContext!: CanvasRenderingContext2D;
 
-  constructor() {
-  }
 
-  ngOnInit() {
-    this.renderLoop();
-  }
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
@@ -38,17 +33,25 @@ export class HandDetectionComponent implements OnInit, AfterViewInit {
         })
         .catch((err) => console.error('Error accessing camera:', err));
     }
-
     this.lastVideoTime = -1;
+    this.renderLoop();
   }
 
 
   private renderLoop(): void {
-    if (this.handLandmarker && this.video.currentTime !== this.lastVideoTime) {
+    if (this.video.currentTime !== this.lastVideoTime) {
+      this.canvasContext.save(); // save state
+      this.canvas.width = this.video.videoWidth;
+      this.canvas.height = this.video.videoHeight;
+      this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
+      this.canvasContext.restore(); // restore to original state
+
+      if(this.handLandmarker){
       const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
       console.log(detections.landmarks);
       this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
       this.lastVideoTime = this.video.currentTime;
+      }
     }
     requestAnimationFrame(() => {
       this.renderLoop();
@@ -78,12 +81,9 @@ export class HandDetectionComponent implements OnInit, AfterViewInit {
     lineWidth: number
   }) {
 
-    this.canvasContext.save(); // save state
     this.canvasContext.fillStyle = param3.color;
-    this.canvas.width = this.video.videoWidth;
-    this.canvas.height = this.video.videoHeight;
-    this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
-    this.canvasContext.restore(); // restore to original state
+
+
   }
 }
 

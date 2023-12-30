@@ -7,7 +7,7 @@ import { ExploreContainerComponentModule } from '../../explore-container/explore
 
 import { CamerapagePageRoutingModule } from './camerapage-routing.module';
 import {WebcamModule} from "ngx-webcam";
-import {TextOutputShortComponent} from "../../components/text-output/text-output.component";
+import {TextOutputComponent} from "../../components/text-output/text-output.component";
 import {HandDetectionComponent} from "../../components/hand-detection/hand-detection.component";
 
 @NgModule({
@@ -19,6 +19,6 @@ import {HandDetectionComponent} from "../../components/hand-detection/hand-detec
         CamerapagePageRoutingModule,
         WebcamModule
     ],
-    declarations: [CamerapagePage, TextOutputShortComponent, HandDetectionComponent]
+    declarations: [CamerapagePage, TextOutputComponent, HandDetectionComponent]
 })
 export class CamerapagePageModule {}
