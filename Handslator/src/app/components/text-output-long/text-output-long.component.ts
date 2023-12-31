@@ -17,7 +17,7 @@ export class TextOutputLongComponent implements AfterViewInit {
   }
 
   private renderLoop(){
-    this.textOutputLong.nativeElement.innerHTML = TextStorageService.getShortText();
+    this.textOutputLong.nativeElement.innerHTML = TextStorageService.getFullText();
     requestAnimationFrame(() => {
       this.renderLoop();
     });
