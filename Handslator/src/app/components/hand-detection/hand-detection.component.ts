@@ -20,7 +20,6 @@ export class HandDetectionComponent implements AfterViewInit {
   private canvasContext!: CanvasRenderingContext2D;
 
 
-
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
     this.video = this.videoElement.nativeElement;
@@ -46,11 +45,14 @@ export class HandDetectionComponent implements AfterViewInit {
       this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
       this.canvasContext.restore(); // restore to original state
 
-      if(this.handLandmarker){
-      const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
-      console.log(detections.landmarks);
-      this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
-      this.lastVideoTime = this.video.currentTime;
+      if (this.handLandmarker) {
+        const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
+        if (detections.landmarks.length > 0) {
+          console.log(detections.landmarks);
+          this.filterData(detections.landmarks);
+          this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
+        }
+        this.lastVideoTime = this.video.currentTime;
       }
     }
     requestAnimationFrame(() => {
@@ -78,11 +80,54 @@ export class HandDetectionComponent implements AfterViewInit {
 
   private drawConnections(landmarks: NormalizedLandmark[][], HAND_CONNECTIONS: LandmarkConnectionArray, param3: {
     color: string;
-    lineWidth: number
+    lineWidth: number;
   }) {
+    const {color, lineWidth} = param3;
 
-    this.canvasContext.fillStyle = param3.color;
+    // Set the line style
+    this.canvasContext.strokeStyle = color;
+    this.canvasContext.lineWidth = lineWidth;
+    this.canvasContext.fillStyle = color;
 
+    // Check if landmarks array is defined and has at least one hand
+    if (landmarks && landmarks.length > 0 && landmarks[0].length > 0) {
+      // Iterate through connections and draw lines
+      HAND_CONNECTIONS.forEach((connection) => {
+        const [startIdx, endIdx] = connection;
+
+        // Check if indices are within bounds
+        if (
+          startIdx >= 0 &&
+          startIdx < landmarks[0].length &&
+          endIdx >= 0 &&
+          endIdx < landmarks[0].length
+        ) {
+          const startPoint = landmarks[0][startIdx];
+          const endPoint = landmarks[0][endIdx];
+
+
+          const start = this.getLandmarkPosition(startPoint);
+          const end = this.getLandmarkPosition(endPoint);
+
+          // Draw line
+          this.canvasContext.beginPath();
+          this.canvasContext.moveTo(start.x, start.y);
+          this.canvasContext.lineTo(end.x, end.y);
+          this.canvasContext.stroke();
+        }
+      });
+    }
+  }
+
+  // Helper function to get the landmark position in canvas coordinates
+  private getLandmarkPosition(landmark: NormalizedLandmark): { x: number; y: number } {
+    const x = landmark.x * this.canvas.width;
+    const y = landmark.y * this.canvas.height;
+    return {x, y};
+  }
+
+
+  private filterData(landmarks: NormalizedLandmark[][]) {
 
   }
 }
