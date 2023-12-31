@@ -15,7 +15,7 @@ import { Injectable } from '@angular/core';
 export class TextStorageService {
   private static instance: TextStorageService;
 
-  private static text!: String;
+  private static text: string;
   private static shortTextLength:number = 20;
 
   private constructor() {
@@ -27,7 +27,7 @@ export class TextStorageService {
    * returns the full text
    * will be used in the text output page
    */
-  public static getFullText():String{
+  public static getFullText():string{
     if (!TextStorageService.instance){
       return "Nothing here yet";
     }
@@ -38,7 +38,7 @@ export class TextStorageService {
    * returns the shortened version of the text
    * will be used in the text component
    */
-  public static getShortText():String{
+  public static getShortText():string{
     if (!TextStorageService.instance){
       return "Show your hands ;)"
     }
@@ -51,10 +51,10 @@ export class TextStorageService {
    * @setLastValue
    * adds a new value to the String
    */
-  public static setLastValue(value:String){
+  public static setLastValue(value:string){
     if (!TextStorageService.instance){
       TextStorageService.instance=new TextStorageService();
     }
-    TextStorageService.text += value;
+    TextStorageService.text = TextStorageService.text.concat(value)
   }
 }
