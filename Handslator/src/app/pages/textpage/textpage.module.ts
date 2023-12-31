@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { TextpagePageRoutingModule } from './textpage-routing.module';
 import { TextpagePage } from './textpage.page';
 import {ExploreContainerComponentModule} from "../../explore-container/explore-container.module";
+import {TextOutputLongComponent} from "../../components/text-output-long/text-output-long.component";
 
 @NgModule({
   imports: [
@@ -15,6 +16,6 @@ import {ExploreContainerComponentModule} from "../../explore-container/explore-c
     TextpagePageRoutingModule,
     ExploreContainerComponentModule
   ],
-  declarations: [TextpagePage]
+    declarations: [TextpagePage, TextOutputLongComponent]
 })
 export class TextpagePageModule {}
