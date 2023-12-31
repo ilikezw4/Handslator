@@ -14,7 +14,6 @@ import {Injectable} from '@angular/core';
 
 export class TextStorageService {
   private static instance: TextStorageService;
-
   private static text: string;
   private static shortTextLength: number = 20;
 
@@ -41,7 +40,7 @@ export class TextStorageService {
    */
   public static getShortText(): string {
     if (!TextStorageService.instance || TextStorageService.text == "") {
-      return "Show your hands ;)"
+      return "";
     }
     if (TextStorageService.text.length > TextStorageService.shortTextLength + 3) {
       return ("..." + TextStorageService.text.slice(TextStorageService.text.length - TextStorageService.shortTextLength, TextStorageService.text.length));

@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FilesetResolver, HandLandmarker} from "@mediapipe/tasks-vision";
 import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@mediapipe/hands";
+import {TextStorageService} from "../../services/text-storage/text-storage.service";
 
 
 @Component({
@@ -28,7 +29,10 @@ export class HandDetectionComponent implements AfterViewInit {
       navigator.mediaDevices.getUserMedia({video: true})
         .then(async (stream) => {
           this.video.srcObject = stream;
+          TextStorageService.setLastValue("Connecting.....");
           await this.initHandLandmarkDetection();
+          TextStorageService.dropData();
+
         })
         .catch((err) => console.error('Error accessing camera:', err));
     }

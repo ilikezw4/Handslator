@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
 
 @Component({
@@ -6,17 +6,20 @@ import {TextStorageService} from "../../services/text-storage/text-storage.servi
   templateUrl: './text-output-long.component.html',
   styleUrls: ['./text-output-long.component.scss'],
 })
-export class TextOutputLongComponent  implements OnInit {
+export class TextOutputLongComponent implements AfterViewInit {
   @ViewChild('textOutputLong')
   private textOutputLong!: ElementRef<HTMLLabelElement>;
 
   constructor() {}
 
-  ngOnInit() {}
-
-
   ngAfterViewInit(){
-    this.textOutputLong.nativeElement.innerHTML = TextStorageService.getFullText();
+    this.renderLoop();
   }
 
+  private renderLoop(){
+    this.textOutputLong.nativeElement.innerHTML = TextStorageService.getShortText();
+    requestAnimationFrame(() => {
+      this.renderLoop();
+    });
+  }
 }
