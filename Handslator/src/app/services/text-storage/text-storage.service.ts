@@ -40,7 +40,7 @@ export class TextStorageService {
    */
   public static getShortText(): string {
     if (!TextStorageService.instance || TextStorageService.text == "") {
-      return "";
+      return "abcd";
     }
     if (TextStorageService.text.length > TextStorageService.shortTextLength + 3) {
       return ("..." + TextStorageService.text.slice(TextStorageService.text.length - TextStorageService.shortTextLength, TextStorageService.text.length));

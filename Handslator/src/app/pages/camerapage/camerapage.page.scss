@@ -1,0 +1,23 @@
+app-text-output{
+  display: flex ;
+  justify-content: center;
+
+  width: 100%;
+  background-color: rgba(0.1,0.1,0.1,0.5);
+
+  position: absolute;
+  z-index: 1;
+  // change this for better graphic ( its not responsive yet )
+  transform: translateY(3000%);
+}
+app-hand-detection{
+  top: 0;
+  left: 0;
+  z-index: 0;
+  position: absolute;
+  height: 70%;
+  margin-top: 0%;
+}
+#bodyelements{
+  position: relative;
+}
