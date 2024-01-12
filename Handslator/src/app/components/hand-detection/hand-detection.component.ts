@@ -4,22 +4,29 @@ import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@me
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
 
 
+
 @Component({
   selector: 'app-hand-detection',
   templateUrl: './hand-detection.component.html',
   styleUrls: ['./hand-detection.component.scss'],
 })
+
 export class HandDetectionComponent implements AfterViewInit {
 
   @ViewChild('video') videoElement!: ElementRef;
   @ViewChild('canvas') canvasElement!: ElementRef;
+
 
   private video!: HTMLVideoElement;
   private canvas!: HTMLCanvasElement;
   private lastVideoTime!: number;
   private handLandmarker!: HandLandmarker;
   private canvasContext!: CanvasRenderingContext2D;
-
+  private previousPositions: String[] = [];
+  private checkingMovement = false;
+  private MAX_POSITIONS = 10;
+  private movementThreshold = 0.05;
+  private stopMoment = false;
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
@@ -52,8 +59,28 @@ export class HandDetectionComponent implements AfterViewInit {
       if (this.handLandmarker) {
         const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
         if (detections.landmarks.length > 0) {
-          // console.log(this.filterData(detections.landmarks));
-          TextStorageService.setLastValue(this.filterData(detections.landmarks));
+          // Convert landmarks to a deep copy of the array to avoid references
+          this.previousPositions = this.landmarkToArr(detections.landmarks);
+
+          if (this.previousPositions.length > this.MAX_POSITIONS) {
+            this.previousPositions.shift();
+          }
+
+          if (this.previousPositions.length === this.MAX_POSITIONS) {
+            const averageHandPosition = this.calculateAverage(this.previousPositions);
+            let difference = (detections.landmarks, averageHandPosition);
+            console.log(difference);
+            console.log(this.previousPositions.length)
+            if (Number(difference) < this.movementThreshold && !this.stopMoment) {
+              this.stopMoment = true;
+              this.previousPositions = [];
+              const data = this.filterData(detections.landmarks);
+              TextStorageService.setLastValue(data);
+            } else if (Number(difference) > this.movementThreshold) {
+              this.stopMoment = false;
+            }
+          }
+
           this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
         }
         this.lastVideoTime = this.video.currentTime;
@@ -130,14 +157,13 @@ export class HandDetectionComponent implements AfterViewInit {
     return {x, y};
   }
 
-
   private filterData(landmarks: NormalizedLandmark[][]) {
 
     let filteredList: string[] = [];
     for (let i = 0; i < landmarks[0].length; i++) {
-      (landmarks[0][i].x.toString().includes('e')) ?  filteredList.push('0') : filteredList.push(((Math.round(landmarks[0][i].x * 1000)).toString())); // x
-      (landmarks[0][i].y.toString().includes('e')) ?  filteredList.push('0') : filteredList.push(((Math.round(landmarks[0][i].y * 1000).toString()))); // y
-      (landmarks[0][i].z.toString().includes('e')) ?  filteredList.push('0') : filteredList.push((Math.round(landmarks[0][i].z * 1000).toString())); // z
+      (landmarks[0][i].x.toString().includes('e')) ? filteredList.push('0') : filteredList.push(((Math.round(landmarks[0][i].x * 1000)).toString())); // x
+      (landmarks[0][i].y.toString().includes('e')) ? filteredList.push('0') : filteredList.push(((Math.round(landmarks[0][i].y * 1000).toString()))); // y
+      (landmarks[0][i].z.toString().includes('e')) ? filteredList.push('0') : filteredList.push((Math.round(landmarks[0][i].z * 1000).toString())); // z
     }
 
     const basecoordX = filteredList[0];
@@ -147,7 +173,7 @@ export class HandDetectionComponent implements AfterViewInit {
       filteredList[i] = (parseInt(filteredList[i]) - parseInt(basecoordX)).toString();
       filteredList[i + 1] = (parseInt(filteredList[i + 1]) - parseInt(basecoordY)).toString();
     }
-    return '\n'.concat(this.normalize(filteredList));
+    return this.normalize(filteredList);
   }
 
   private normalize(list: string[]) {
@@ -158,6 +184,22 @@ export class HandDetectionComponent implements AfterViewInit {
     }
 
     return list.toString();
+  }
+
+  private calculateAverage(list: String[]) {
+
+  }
+
+  private landmarkToArr(landmarks: NormalizedLandmark[][]) {
+    let list: string[] = [];
+    for (let i = 0; i < landmarks.length; i++) {
+      for(let j = 0; j < landmarks[i].length; j++) {
+        list.push(landmarks[i][j].x.toString());
+        list.push(landmarks[i][j].y.toString());
+        list.push(landmarks[i][j].z.toString());
+      }
+    }
+    return list;
   }
 }
 
