@@ -1,0 +1,16 @@
+ion-buttons.headline{
+  size: 40px;
+}
+ion-title{
+  width: 50%;
+
+}
+.copy-text {
+  display: none;
+}
+
+@media (min-width: 576px) {
+  .copy-text {
+    display: inline;
+  }
+}
