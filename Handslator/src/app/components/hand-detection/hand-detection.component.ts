@@ -52,7 +52,8 @@ export class HandDetectionComponent implements AfterViewInit {
       if (this.handLandmarker) {
         const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
         if (detections.landmarks.length > 0) {
-          console.log(this.filterData(detections.landmarks));
+          // console.log(this.filterData(detections.landmarks));
+          TextStorageService.setLastValue(this.filterData(detections.landmarks));
           this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
         }
         this.lastVideoTime = this.video.currentTime;
@@ -146,7 +147,7 @@ export class HandDetectionComponent implements AfterViewInit {
       filteredList[i] = (parseInt(filteredList[i]) - parseInt(basecoordX)).toString();
       filteredList[i + 1] = (parseInt(filteredList[i + 1]) - parseInt(basecoordY)).toString();
     }
-    return ','.concat(this.normalize(filteredList));
+    return this.normalize(filteredList);
   }
 
   private normalize(list: string[]) {
