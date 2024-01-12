@@ -1,6 +1,10 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" >
   <ion-toolbar>
-    <ion-title>Text</ion-title>
+    <ion-title slot="start">Text</ion-title>
+    <ion-button slot="end" fill="clear" clear icon-only>
+      <ion-icon name="Copy"></ion-icon>
+      <span class="copy-text">Copy</span>
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 
@@ -11,6 +15,4 @@
     </ion-toolbar>
   </ion-header>
   <app-text-output-long></app-text-output-long>
-  <app-explore-container name="Text here"></app-explore-container>
-
 </ion-content>
