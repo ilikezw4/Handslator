@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
 import {FilesetResolver, HandLandmarker} from "@mediapipe/tasks-vision";
 import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@mediapipe/hands";
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
@@ -52,8 +52,7 @@ export class HandDetectionComponent implements AfterViewInit {
       if (this.handLandmarker) {
         const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
         if (detections.landmarks.length > 0) {
-          console.log(detections.landmarks);
-          this.filterData(detections.landmarks);
+          console.log(this.filterData(detections.landmarks));
           this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
         }
         this.lastVideoTime = this.video.currentTime;
@@ -133,6 +132,31 @@ export class HandDetectionComponent implements AfterViewInit {
 
   private filterData(landmarks: NormalizedLandmark[][]) {
 
+    let filteredList: string[] = [];
+    for (let i = 0; i < landmarks[0].length; i++) {
+      (landmarks[0][i].x.toString().includes('e')) ?  filteredList.push('0') : filteredList.push(((Math.round(landmarks[0][i].x * 1000)).toString())); // x
+      (landmarks[0][i].y.toString().includes('e')) ?  filteredList.push('0') : filteredList.push(((Math.round(landmarks[0][i].y * 1000).toString()))); // y
+      (landmarks[0][i].z.toString().includes('e')) ?  filteredList.push('0') : filteredList.push((Math.round(landmarks[0][i].z * 1000).toString())); // z
+    }
+
+    const basecoordX = filteredList[0];
+    const basecoordY = filteredList[1];
+
+    for (let i = 3; i < filteredList.length; i = i + 3) {
+      filteredList[i] = (parseInt(filteredList[i]) - parseInt(basecoordX)).toString();
+      filteredList[i + 1] = (parseInt(filteredList[i + 1]) - parseInt(basecoordY)).toString();
+    }
+    return ','.concat(this.normalize(filteredList));
+  }
+
+  private normalize(list: string[]) {
+    const normNumber = (200 / (Math.sqrt(Math.pow(parseInt(list[12]), 2) + Math.pow(parseInt(list[13]), 2))));
+    for (let i = 3; i < list.length; i = i + 3) {
+      list[i] = (Math.floor(parseInt(list[i]) * normNumber)).toString();
+      list[i + 1] = (Math.floor(parseInt(list[i + 1]) * normNumber)).toString();
+    }
+
+    return list.toString();
   }
 }
 
