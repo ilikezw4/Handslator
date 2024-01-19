@@ -40,13 +40,14 @@ export class HandDetectionComponent implements AfterViewInit {
       devices.forEach((device) => {
         if (device.kind === 'videoinput') {
           this.cameras.push(device.deviceId);
+
         }
       });
       const videoConstraints = {
         video: {deviceId: {exact: this.cameras[0]}},
         audio: false
       };
-
+      // Access the camera
       navigator.mediaDevices.getUserMedia(videoConstraints)
         .then(async (stream) => {
           this.video.srcObject = stream;
@@ -208,13 +209,13 @@ export class HandDetectionComponent implements AfterViewInit {
     this.augmentCamera();
   }
 
+
+  //TODO: fixing "OverconstrainedError: Error accessing Camera" error on some phones (e.g. Samsung A51)
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
-        console.log(this.cameras);
         (this.isSwapped) ? this.cameraId = 0 : this.cameraId = 3;
         const videoConstraints = {
-          // video: {deviceId: {exact: this.cameras[this.cameraId]}},
           video: {deviceId: {exact: this.cameras[this.cameraId]}},
           audio: false
         };
