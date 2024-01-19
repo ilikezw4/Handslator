@@ -3,7 +3,7 @@ import {FilesetResolver, HandLandmarker} from "@mediapipe/tasks-vision";
 import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@mediapipe/hands";
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
 import * as tf from '@tensorflow/tfjs';
-
+import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
 
 @Component({
   selector: 'app-hand-detection',
@@ -16,69 +16,77 @@ export class HandDetectionComponent implements AfterViewInit {
   @ViewChild('video') videoElement!: ElementRef;
   @ViewChild('canvas') canvasElement!: ElementRef;
 
-
   private video!: HTMLVideoElement;
   private canvas!: HTMLCanvasElement;
   private lastVideoTime!: number;
   private handLandmarker!: HandLandmarker;
   private canvasContext!: CanvasRenderingContext2D;
-  private previousPositions: number[][]= [];
+  private previousPositions: number[][] = [];
   private MAX_POSITIONS = 10;
   private movementThreshold = 2;
   private stopMoment = false;
+  private cameraDirection = 'user';
+  private isSwapped!: boolean;
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
     this.video = this.videoElement.nativeElement;
     this.canvasContext = this.canvas.getContext('2d')!;
     if (navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({video: true})
+      navigator.mediaDevices.getUserMedia({video: true, audio: false})
         .then(async (stream) => {
           this.video.srcObject = stream;
           TextStorageService.setLastValue("Connecting.....");
           await this.initHandLandmarkDetection();
           TextStorageService.dropData();
-
         })
         .catch((err) => console.error('Error accessing camera:', err));
     }
+    this.isSwapped = CameraSwapService.getCameraState();
     this.lastVideoTime = -1;
     this.renderLoop();
   }
 
 
   private renderLoop(): void {
-    if (this.video.currentTime !== this.lastVideoTime) {
-      this.canvasContext.save(); // save state
-      this.canvas.width = this.video.videoWidth;
-      this.canvas.height = this.video.videoHeight;
-      this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
-      this.canvasContext.restore(); // restore to original state
+    if (this.isSwapped !== CameraSwapService.getCameraState()) {
+      console.log("swap");
+      this.isSwapped = CameraSwapService.getCameraState();
+      this.switchCamera();
+    }
+    if (this.video) {
+      if (this.video.currentTime !== this.lastVideoTime) {
+        this.canvasContext.save(); // save state
+        this.canvas.width = this.video.videoWidth;
+        this.canvas.height = this.video.videoHeight;
+        this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
+        this.canvasContext.restore(); // restore to original state
 
-      if (this.handLandmarker) {
-        const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
-        if (detections.landmarks.length > 0) {
-          // Convert landmarks to a deep copy of the array to avoid references
-          this.previousPositions.push(this.filterData(detections.landmarks));
-          if (this.previousPositions.length > this.MAX_POSITIONS) {
-            this.previousPositions.shift();
-          }
-          if (this.previousPositions.length === this.MAX_POSITIONS) {
-            let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
-            let difference = Math.abs(differenceTensor.dataSync()[0]);
-
-            if (difference < this.movementThreshold && !this.stopMoment) {
-              this.stopMoment = true;
-              this.previousPositions = [];
-              const data = this.filterData(detections.landmarks);
-              TextStorageService.setLastValue(data.toString() + "\n");
-            } else if (difference > this.movementThreshold*2) {
-              this.stopMoment = false;
+        if (this.handLandmarker) {
+          const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
+          if (detections.landmarks.length > 0) {
+            // Convert landmarks to a deep copy of the array to avoid references
+            this.previousPositions.push(this.filterData(detections.landmarks));
+            if (this.previousPositions.length > this.MAX_POSITIONS) {
+              this.previousPositions.shift();
             }
+            if (this.previousPositions.length === this.MAX_POSITIONS) {
+              let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
+              let difference = Math.abs(differenceTensor.dataSync()[0]);
+
+              if (difference < this.movementThreshold && !this.stopMoment) {
+                this.stopMoment = true;
+                this.previousPositions = [];
+                const data = this.filterData(detections.landmarks);
+                TextStorageService.setLastValue(data.toString() + "\n");
+              } else if (difference > this.movementThreshold * 2) {
+                this.stopMoment = false;
+              }
+            }
+            this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
           }
-          this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
+          this.lastVideoTime = this.video.currentTime;
         }
-        this.lastVideoTime = this.video.currentTime;
       }
     }
     requestAnimationFrame(() => {
@@ -180,5 +188,26 @@ export class HandDetectionComponent implements AfterViewInit {
     return list;
   }
 
+  private switchCamera() {
+    if (this.cameraDirection === 'user') {
+      this.cameraDirection = 'environment';
+    } else if (this.cameraDirection === 'environment') {
+      this.cameraDirection = 'user';
+    }
+    this.augmentCamera();
+  }
+
+  private augmentCamera() {
+    if (navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: this.cameraDirection }, audio: false })
+        .then(async (stream) => {
+          this.video.srcObject = stream;
+          this.video.currentTime = this.lastVideoTime;
+        })
+        .catch((err) => console.error('Error accessing camera:', err));
+    }
+  }
+
 }
+
 
