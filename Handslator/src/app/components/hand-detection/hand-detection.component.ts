@@ -27,6 +27,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private stopMoment = false;
   private cameraDirection = 'user';
   private isSwapped!: boolean;
+  private cameras: any[] = [];
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
@@ -54,7 +55,7 @@ export class HandDetectionComponent implements AfterViewInit {
       this.isSwapped = CameraSwapService.getCameraState();
       this.switchCamera();
     }
-    if (this.video) {
+    if (this.video.srcObject) {
       if (this.video.currentTime !== this.lastVideoTime) {
         this.canvasContext.save(); // save state
         this.canvas.width = this.video.videoWidth;
@@ -194,20 +195,37 @@ export class HandDetectionComponent implements AfterViewInit {
     } else if (this.cameraDirection === 'environment') {
       this.cameraDirection = 'user';
     }
+    this.video.pause();
+    this.video.srcObject = null;
     this.augmentCamera();
   }
 
-  private augmentCamera() {
+  private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: this.cameraDirection }, audio: false })
-        .then(async (stream) => {
-          this.video.srcObject = stream;
-          this.video.currentTime = this.lastVideoTime;
-        })
-        .catch((err) => console.error('Error accessing camera:', err));
+      try {
+        // Enumerate devices and get camera IDs
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        this.cameras = devices.filter((device) => device.kind === 'videoinput').map((device) => device.deviceId);
+
+        // Switch camera based on cameraDirection
+        const cameraId = (this.cameraDirection === 'user') ? this.cameras[1] : this.cameras[0];
+        const videoConstraints = {
+          video: { deviceId: { exact: cameraId } },
+          audio: false
+        };
+        // Access the camera
+        this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
+        this.video.currentTime = this.lastVideoTime;
+        await this.video.play();
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+      }
     }
   }
 
 }
+
+
+
 
 
