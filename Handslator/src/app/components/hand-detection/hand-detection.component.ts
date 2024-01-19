@@ -36,7 +36,12 @@ export class HandDetectionComponent implements AfterViewInit {
     this.canvasContext = this.canvas.getContext('2d')!;
     if (navigator.mediaDevices.getUserMedia) {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      this.cameras = devices.filter((device) => device.kind === 'videoinput').map((device) => {device.deviceId;});
+      console.log(devices)
+      devices.forEach((device) => {
+        if (device.kind === 'videoinput') {
+          this.cameras.push(device.deviceId);
+        }
+      });
       const videoConstraints = {
         video: {deviceId: {exact: this.cameras[0]}},
         audio: false
@@ -206,6 +211,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
+        console.log(this.cameras);
         (this.isSwapped) ? this.cameraId = 0 : this.cameraId = 3;
         const videoConstraints = {
           // video: {deviceId: {exact: this.cameras[this.cameraId]}},
