@@ -16,10 +16,24 @@ export class CameraSwapService {
   private constructor() {
     this.state = true;
   }
+
+  /**
+   * @swapCamera swaps between the cameras
+   */
   public swapCamera(){
+    if (!CameraSwapService.instance) {
+      CameraSwapService.instance = new CameraSwapService();
+    }
     this.state=!this.state;
   }
+
+  /**
+   * @getCameraState returns the camera state
+   */
   public getCameraState(){
+    if (!CameraSwapService.instance) {
+      CameraSwapService.instance = new CameraSwapService();
+    }
     return this.state;
   }
 }
