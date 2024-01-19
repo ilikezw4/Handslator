@@ -11,30 +11,30 @@ import {Injectable} from '@angular/core';
 })
 export class CameraSwapService {
   private static instance: CameraSwapService;
-  private state: boolean;
+  private static state: boolean;
 
   private constructor() {
-    this.state = true;
+    CameraSwapService.state = true;
   }
 
   /**
    * @swapCamera swaps between the cameras
    */
-  public swapCamera(){
+  public static swapCamera(){
     if (!CameraSwapService.instance) {
       CameraSwapService.instance = new CameraSwapService();
     }
-    this.state=!this.state;
+    CameraSwapService.state=!CameraSwapService.state;
   }
 
   /**
    * @getCameraState returns the camera state
    */
-  public getCameraState(){
+  public static getCameraState(){
     if (!CameraSwapService.instance) {
       CameraSwapService.instance = new CameraSwapService();
     }
-    return this.state;
+    return CameraSwapService.state;
   }
 }
 
