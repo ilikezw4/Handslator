@@ -25,16 +25,24 @@ export class HandDetectionComponent implements AfterViewInit {
   private MAX_POSITIONS = 10;
   private movementThreshold = 2;
   private stopMoment = false;
-  private cameraDirection = 'user';
   private isSwapped!: boolean;
   private cameras: any[] = [];
+  private cameraId = 0;
+
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
     this.video = this.videoElement.nativeElement;
     this.canvasContext = this.canvas.getContext('2d')!;
     if (navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({video: true, audio: false})
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      this.cameras = devices.filter((device) => device.kind === 'videoinput').map((device) => {device.deviceId;});
+      const videoConstraints = {
+        video: {deviceId: {exact: this.cameras[0]}},
+        audio: false
+      };
+
+      navigator.mediaDevices.getUserMedia(videoConstraints)
         .then(async (stream) => {
           this.video.srcObject = stream;
           TextStorageService.setLastValue("Connecting.....");
@@ -190,11 +198,6 @@ export class HandDetectionComponent implements AfterViewInit {
   }
 
   private switchCamera() {
-    if (this.cameraDirection === 'user') {
-      this.cameraDirection = 'environment';
-    } else if (this.cameraDirection === 'environment') {
-      this.cameraDirection = 'user';
-    }
     this.video.pause();
     this.video.srcObject = null;
     this.augmentCamera();
@@ -203,20 +206,17 @@ export class HandDetectionComponent implements AfterViewInit {
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
-        // Enumerate devices and get camera IDs
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        this.cameras = devices.filter((device) => device.kind === 'videoinput').map((device) => device.deviceId);
-
-        // Switch camera based on cameraDirection
-        const cameraId = (this.cameraDirection === 'user') ? this.cameras[1] : this.cameras[0];
+        (this.isSwapped) ? this.cameraId = 0 : this.cameraId = 3;
         const videoConstraints = {
-          video: { deviceId: { exact: cameraId } },
+          // video: {deviceId: {exact: this.cameras[this.cameraId]}},
+          video: {deviceId: {exact: this.cameras[this.cameraId]}},
           audio: false
         };
         // Access the camera
         this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
         this.video.currentTime = this.lastVideoTime;
         await this.video.play();
+
       } catch (err) {
         console.error('Error accessing camera:', err);
       }
