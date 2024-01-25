@@ -28,7 +28,7 @@ export class TextStorageService {
    */
   public static getFullText(): string {
     if (!TextStorageService.instance || TextStorageService.text == "") {
-      return "Nothing here yet";
+      return "Noch keine Buchstaben erkannt";
     }
     return TextStorageService.text;
   }
@@ -40,7 +40,7 @@ export class TextStorageService {
    */
   public static getShortText(): string {
     if (!TextStorageService.instance || TextStorageService.text == "") {
-      return "Show your hands ; )";
+      return "Zeige deine Hand";
     }
     if (TextStorageService.text.length > TextStorageService.shortTextLength + 3) {
       return ("..." + TextStorageService.text.slice(TextStorageService.text.length - TextStorageService.shortTextLength, TextStorageService.text.length));
