@@ -58,7 +58,7 @@ export class HandDetectionComponent implements AfterViewInit {
           await this.initHandLandmarkDetection();
           TextStorageService.dropData()
           TextStorageService.setLastValue("Loading model.....");
-          await RecognitionModelService.loadGraphModel();
+          await RecognitionModelService.loadLayersModel();
           TextStorageService.dropData();
         })
         .catch((err) => console.error('Error accessing camera:', err));
