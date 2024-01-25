@@ -71,7 +71,7 @@ export class HandDetectionComponent implements AfterViewInit {
       this.switchCamera();
     }
     if (this.video.srcObject) {
-      if (this.video.currentTime !== this.lastVideoTime) {
+      if (this.video.currentTime !== this.lastVideoTime && this.video.currentTime > this.lastVideoTime) {
         this.canvasContext.save(); // save state
         this.canvas.width = this.video.videoWidth;
         this.canvas.height = this.video.videoHeight;
@@ -103,6 +103,8 @@ export class HandDetectionComponent implements AfterViewInit {
           }
           this.lastVideoTime = this.video.currentTime;
         }
+      }else{
+        this.video.currentTime = this.lastVideoTime;
       }
     }
     requestAnimationFrame(() => {
@@ -229,9 +231,10 @@ export class HandDetectionComponent implements AfterViewInit {
 
           // Access the camera
           this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
-          this.video.currentTime = this.lastVideoTime;
+          if (this.video.currentTime < this.lastVideoTime) {
+            this.video.currentTime = this.lastVideoTime;
+          }
         }
-
       } catch (err) {
         console.error('Error accessing camera:', err);
       }
