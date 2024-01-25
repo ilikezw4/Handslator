@@ -1,5 +1,7 @@
 {
   "name": "Handslator",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
