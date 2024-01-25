@@ -11,9 +11,14 @@ ion-title {
 .copy-text {
   display: none;
 }
-
+.tts-text{
+  display: none;
+}
 @media (min-width: 576px) {
   .copy-text {
+    display: inline;
+  }
+  .tts-text{
     display: inline;
   }
 }
