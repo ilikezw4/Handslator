@@ -4,6 +4,8 @@ import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@me
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
+import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
+
 
 @Component({
   selector: 'app-hand-detection',
@@ -28,6 +30,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private cameraId = 0;
+  private model: any;
 
 
   async ngAfterViewInit(): Promise<void> {
@@ -53,6 +56,8 @@ export class HandDetectionComponent implements AfterViewInit {
           this.video.srcObject = stream;
           TextStorageService.setLastValue("Connecting.....");
           await this.initHandLandmarkDetection();
+          TextStorageService.setLastValue("Loading model.....");
+          await RecognitionModelService.loadGraphModel();
           TextStorageService.dropData();
         })
         .catch((err) => console.error('Error accessing camera:', err));
@@ -70,7 +75,7 @@ export class HandDetectionComponent implements AfterViewInit {
       this.switchCamera();
     }
     if (this.video.srcObject) {
-      if (this.video.currentTime !== this.lastVideoTime) {
+      if (this.video.currentTime !== this.lastVideoTime && this.video.currentTime > this.lastVideoTime) {
         this.canvasContext.save(); // save state
         this.canvas.width = this.video.videoWidth;
         this.canvas.height = this.video.videoHeight;
@@ -102,6 +107,8 @@ export class HandDetectionComponent implements AfterViewInit {
           }
           this.lastVideoTime = this.video.currentTime;
         }
+      }else{
+        this.video.currentTime = this.lastVideoTime;
       }
     }
     requestAnimationFrame(() => {
@@ -204,32 +211,39 @@ export class HandDetectionComponent implements AfterViewInit {
   }
 
   private switchCamera() {
-    this.video.pause();
     this.video.srcObject = null;
     this.augmentCamera();
   }
 
 
-  //TODO: fixing "OverconstrainedError: Error accessing Camera" error on some phones (e.g. Samsung A51)
+  //TODO: fixing "OverconstrainedError" error on some phones (e.g. Samsung A51)  ---> not tested yet
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
         (this.isSwapped) ? this.cameraId = 0 : this.cameraId = 3;
-        const videoConstraints = {
-          video: {deviceId: {exact: this.cameras[this.cameraId]}},
-          audio: false
-        };
-        // Access the camera
-        this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
-        this.video.currentTime = this.lastVideoTime;
-        await this.video.play();
 
+        if (this.cameras[this.cameraId] !== undefined) {
+          const videoConstraints = {
+            video: {
+              width: this.cameras[this.cameraId].width,
+              height: this.cameras[this.cameraId].height,
+              facingMode: this.cameras[this.cameraId].facingMode,
+              deviceId: {exact: this.cameras[this.cameraId]}
+            },
+            audio: false
+          };
+
+          // Access the camera
+          this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
+          if (this.video.currentTime < this.lastVideoTime) {
+            this.video.currentTime = this.lastVideoTime;
+          }
+        }
       } catch (err) {
         console.error('Error accessing camera:', err);
       }
     }
   }
-
 }
 
 
