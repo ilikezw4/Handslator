@@ -10,11 +10,11 @@ export class RecognitionModelService {
   constructor() { }
 
   public static async loadLayersModel() {
-    this.model = await tf.loadLayersModel('assets/models/model.json');
+    this.model = await tf.loadLayersModel('');
     console.log("Layers model loaded");
   }
   public static async loadGraphModel() {
-    this.model = await tf.loadGraphModel('assets/models/model.json');
+    this.model = await tf.loadGraphModel('');
     console.log("Graph model loaded");
   }
 
