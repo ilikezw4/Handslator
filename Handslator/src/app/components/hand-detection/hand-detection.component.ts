@@ -28,6 +28,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private cameraId = 0;
+  private locked = false;
 
 
   async ngAfterViewInit(): Promise<void> {
@@ -204,25 +205,32 @@ export class HandDetectionComponent implements AfterViewInit {
   }
 
   private switchCamera() {
-    this.video.pause();
     this.video.srcObject = null;
     this.augmentCamera();
   }
 
 
-  //TODO: fixing "OverconstrainedError: Error accessing Camera" error on some phones (e.g. Samsung A51)
+  //TODO: fixing "OverconstrainedError" error on some phones (e.g. Samsung A51)
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
         (this.isSwapped) ? this.cameraId = 0 : this.cameraId = 3;
-        const videoConstraints = {
-          video: {deviceId: {exact: this.cameras[this.cameraId]}},
-          audio: false
-        };
-        // Access the camera
-        this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
-        this.video.currentTime = this.lastVideoTime;
-        await this.video.play();
+
+        if (this.cameras[this.cameraId] !== undefined) {
+          const videoConstraints = {
+            video: {
+              width: this.cameras[this.cameraId].width,
+              height: this.cameras[this.cameraId].height,
+              facingMode: this.cameras[this.cameraId].facingMode,
+              deviceId: {exact: this.cameras[this.cameraId]}
+            },
+            audio: false
+          };
+
+          // Access the camera
+          this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
+          this.video.currentTime = this.lastVideoTime;
+        }
 
       } catch (err) {
         console.error('Error accessing camera:', err);
