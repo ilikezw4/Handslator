@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as tf from "@tensorflow/tfjs";
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -11,11 +10,11 @@ export class RecognitionModelService {
   constructor() { }
 
   public static async loadLayersModel() {
-    this.model = await tf.loadLayersModel('/assets/models/model.json');
+    this.model = await tf.loadLayersModel('./assets/models/model.json');
     console.log("Layers model loaded");
   }
   public static async loadGraphModel() {
-    this.model = await tf.loadGraphModel('/assets/models/model.json');
+    this.model = await tf.loadGraphModel('./assets/models/model.json');
     console.log("Graph model loaded");
   }
 
