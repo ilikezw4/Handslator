@@ -5,6 +5,7 @@ import {TextStorageService} from "../../services/text-storage/text-storage.servi
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
 import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
+import {Rank} from "@tensorflow/tfjs";
 
 
 @Component({
@@ -25,12 +26,12 @@ export class HandDetectionComponent implements AfterViewInit {
   private canvasContext!: CanvasRenderingContext2D;
   private previousPositions: number[][] = [];
   private MAX_POSITIONS = 10;
-  private movementThreshold = 2;
+  private movementThreshold = 2.5;
   private stopMoment = false;
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private cameraId = 0;
-  private model: any;
+
 
 
   async ngAfterViewInit(): Promise<void> {
@@ -99,7 +100,10 @@ export class HandDetectionComponent implements AfterViewInit {
                 this.stopMoment = true;
                 this.previousPositions = [];
                 const data = this.filterData(detections.landmarks);
-                TextStorageService.setLastValue(data.toString() + "\n");
+                const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
+                const prediction = predictionValue as tf.Tensor<tf.Rank>;
+                console.log(prediction.dataSync());
+                this.evaluatePrediction(prediction.dataSync());
               } else if (difference > this.movementThreshold * 2) {
                 this.stopMoment = false;
               }
@@ -245,6 +249,13 @@ export class HandDetectionComponent implements AfterViewInit {
       }
     }
   }
+
+  private evaluatePrediction(prediction: Float32Array | Int32Array | Uint8Array) {
+      const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"];
+      const maxIndex = prediction.indexOf(Math.max(...prediction));
+      TextStorageService.setLastValue(letters[maxIndex]);
+    }
+
 }
 
 
