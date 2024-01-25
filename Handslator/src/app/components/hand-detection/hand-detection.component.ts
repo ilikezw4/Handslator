@@ -56,6 +56,7 @@ export class HandDetectionComponent implements AfterViewInit {
           this.video.srcObject = stream;
           TextStorageService.setLastValue("Connecting.....");
           await this.initHandLandmarkDetection();
+          TextStorageService.dropData()
           TextStorageService.setLastValue("Loading model.....");
           await RecognitionModelService.loadGraphModel();
           TextStorageService.dropData();
