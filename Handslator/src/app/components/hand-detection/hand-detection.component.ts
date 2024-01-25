@@ -5,7 +5,7 @@ import {TextStorageService} from "../../services/text-storage/text-storage.servi
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
 import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
-import {Rank} from "@tensorflow/tfjs";
+
 
 
 @Component({
@@ -225,14 +225,13 @@ export class HandDetectionComponent implements AfterViewInit {
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
-        (this.isSwapped) ? this.cameraId = 0 : this.cameraId = 3;
+        this.cameraId = (this.cameraId + 1) % this.cameras.length;
 
         if (this.cameras[this.cameraId] !== undefined) {
           const videoConstraints = {
             video: {
               width: this.cameras[this.cameraId].width,
               height: this.cameras[this.cameraId].height,
-              facingMode: this.cameras[this.cameraId].facingMode,
               deviceId: {exact: this.cameras[this.cameraId]}
             },
             audio: false
@@ -243,8 +242,11 @@ export class HandDetectionComponent implements AfterViewInit {
           if (this.video.currentTime < this.lastVideoTime) {
             this.video.currentTime = this.lastVideoTime;
           }
+        }else{
+          this.augmentCamera(); // try again
         }
       } catch (err) {
+        this.augmentCamera()
         console.error('Error accessing camera:', err);
       }
     }
