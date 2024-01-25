@@ -4,6 +4,8 @@ import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@me
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
+import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
+
 
 @Component({
   selector: 'app-hand-detection',
@@ -28,7 +30,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private cameraId = 0;
-  private locked = false;
+  private model: any;
 
 
   async ngAfterViewInit(): Promise<void> {
@@ -54,6 +56,8 @@ export class HandDetectionComponent implements AfterViewInit {
           this.video.srcObject = stream;
           TextStorageService.setLastValue("Connecting.....");
           await this.initHandLandmarkDetection();
+          TextStorageService.setLastValue("Loading model.....");
+          await RecognitionModelService.loadGraphModel();
           TextStorageService.dropData();
         })
         .catch((err) => console.error('Error accessing camera:', err));
@@ -212,7 +216,7 @@ export class HandDetectionComponent implements AfterViewInit {
   }
 
 
-  //TODO: fixing "OverconstrainedError" error on some phones (e.g. Samsung A51)
+  //TODO: fixing "OverconstrainedError" error on some phones (e.g. Samsung A51)  ---> not tested yet
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
@@ -240,7 +244,6 @@ export class HandDetectionComponent implements AfterViewInit {
       }
     }
   }
-
 }
 
 
