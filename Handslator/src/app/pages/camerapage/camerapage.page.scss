@@ -13,12 +13,15 @@ app-text-output{
   font-size: 35px;
 }
 app-hand-detection{
+  display: flex ;
+
   top: 0;
-  left: 0;
   z-index: 0;
-  position: absolute;
+  position: fixed;
   height: 70%;
   margin-top: 0%;
+
+
 }
 #bodyelements{
   position: relative;
