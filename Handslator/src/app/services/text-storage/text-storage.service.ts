@@ -15,7 +15,7 @@ import {Injectable} from '@angular/core';
 export class TextStorageService {
   private static instance: TextStorageService;
   private static text: string;
-  private static shortTextLength: number = 20;
+  private static shortTextLength: number = 10;
 
   private constructor() {
     TextStorageService.text = "";
