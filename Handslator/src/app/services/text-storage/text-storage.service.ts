@@ -68,4 +68,8 @@ export class TextStorageService {
       TextStorageService.text = "";
     }
   }
+
+  public static setMaxTextLength(length: number) {
+    TextStorageService.shortTextLength = length;
+  }
 }

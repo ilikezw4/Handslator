@@ -61,6 +61,7 @@ export class HandDetectionComponent implements AfterViewInit {
           TextStorageService.setLastValue("Loading model.....");
           await RecognitionModelService.loadLayersModel();
           TextStorageService.dropData();
+          TextStorageService.setMaxTextLength(10);
         })
         .catch((err) => console.error('Error accessing camera:', err));
     }
