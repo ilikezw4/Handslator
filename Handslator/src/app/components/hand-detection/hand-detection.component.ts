@@ -244,9 +244,24 @@ export class HandDetectionComponent implements AfterViewInit {
         } else {
           this.augmentCamera(); // try again
         }
-      } catch (err) {
-        this.augmentCamera()
-        console.error('Error accessing camera:', err);
+      } catch (err: any) {
+        if (err.name === 'NotAllowedError') {
+          // The user denied permission
+          console.error('User denied camera access:', err);
+          this.augmentCamera();
+        } else if (err.name === 'NotFoundError' || err.name === 'SourceUnavailableError') {
+          // Camera not found or not available
+          console.error('Camera not found or not available:', err);
+          this.augmentCamera();
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+          // Camera is not readable or track start error
+          console.error('Camera not readable or track start error:', err);
+          this.augmentCamera();
+        } else {
+          // Handle other errors
+          console.error('Camera error:', err);
+          this.augmentCamera();
+        }
       }
     }
   }
