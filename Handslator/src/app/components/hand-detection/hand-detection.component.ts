@@ -7,7 +7,6 @@ import {CameraSwapService} from "../../services/swap-camera/camera-swap.service"
 import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
 
 
-
 @Component({
   selector: 'app-hand-detection',
   templateUrl: './hand-detection.component.html',
@@ -33,7 +32,6 @@ export class HandDetectionComponent implements AfterViewInit {
   private cameraId = 0;
 
 
-
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
     this.video = this.videoElement.nativeElement;
@@ -48,7 +46,9 @@ export class HandDetectionComponent implements AfterViewInit {
         }
       });
       const videoConstraints = {
-        video: {deviceId: {exact: this.cameras[0]}},
+        video: {
+          facingMode: 'user',
+        },
         audio: false
       };
       // Access the camera
@@ -112,7 +112,7 @@ export class HandDetectionComponent implements AfterViewInit {
           }
           this.lastVideoTime = this.video.currentTime;
         }
-      }else{
+      } else {
         this.video.currentTime = this.lastVideoTime;
       }
     }
@@ -226,13 +226,11 @@ export class HandDetectionComponent implements AfterViewInit {
     if (navigator.mediaDevices.getUserMedia) {
       try {
         this.cameraId = (this.cameraId + 1) % this.cameras.length;
-
+        console.log(this.cameras[this.cameraId]);
         if (this.cameras[this.cameraId] !== undefined) {
           const videoConstraints = {
             video: {
-              width: this.cameras[this.cameraId].width,
-              height: this.cameras[this.cameraId].height,
-              deviceId: {exact: this.cameras[this.cameraId]}
+              deviceId: this.cameras[this.cameraId],
             },
             audio: false
           };
@@ -242,7 +240,7 @@ export class HandDetectionComponent implements AfterViewInit {
           if (this.video.currentTime < this.lastVideoTime) {
             this.video.currentTime = this.lastVideoTime;
           }
-        }else{
+        } else {
           this.augmentCamera(); // try again
         }
       } catch (err) {
@@ -253,10 +251,10 @@ export class HandDetectionComponent implements AfterViewInit {
   }
 
   private evaluatePrediction(prediction: Float32Array | Int32Array | Uint8Array) {
-      const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"];
-      const maxIndex = prediction.indexOf(Math.max(...prediction));
-      TextStorageService.setLastValue(letters[maxIndex]);
-    }
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"];
+    const maxIndex = prediction.indexOf(Math.max(...prediction));
+    TextStorageService.setLastValue(letters[maxIndex]);
+  }
 
 }
 
