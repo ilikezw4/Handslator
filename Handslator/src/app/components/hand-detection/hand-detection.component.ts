@@ -131,7 +131,7 @@ export class HandDetectionComponent implements AfterViewInit {
       vision,
       {
         baseOptions: {
-          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
+          modelAssetPath: "./assets/models/hand_landmarker.task",
           delegate: "GPU",
         },
         numHands: 1,
