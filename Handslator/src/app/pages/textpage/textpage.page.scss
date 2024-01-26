@@ -14,11 +14,17 @@ ion-title {
 .tts-text{
   display: none;
 }
+.clear-text{
+   display: none;
+}
 @media (min-width: 576px) {
   .copy-text {
     display: inline;
   }
   .tts-text{
+    display: inline;
+  }
+  .clear-text{
     display: inline;
   }
 }

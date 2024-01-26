@@ -12,6 +12,7 @@ export class TextpagePage implements AfterViewInit {
 
   private copybutton!: HTMLButtonElement;
   private ttsbutton!: HTMLButtonElement;
+  private clearbutton !: HTMLButtonElement;
 
   constructor() {
   }
@@ -21,6 +22,9 @@ export class TextpagePage implements AfterViewInit {
     this.copybutton.addEventListener("click", this.copyButtonClick);
     this.ttsbutton = document.getElementById("ttsButton") as HTMLButtonElement;
     this.ttsbutton.addEventListener("click", this.ttsButtonClick);
+    this.clearbutton = document.getElementById("clearButton") as HTMLButtonElement;
+    this.clearbutton.addEventListener("click", this.clearButtonClick);
+
 
   }
 
@@ -40,6 +44,9 @@ export class TextpagePage implements AfterViewInit {
 
     // Speak the text
     speechSynthesis.speak(utterance);
+  }
+  private async clearButtonClick(){
+    TextStorageService.dropData();
   }
 }
 
