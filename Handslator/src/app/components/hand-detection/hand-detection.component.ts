@@ -5,6 +5,7 @@ import {TextStorageService} from "../../services/text-storage/text-storage.servi
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
 import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
+import {Directory, Encoding, Filesystem} from "@capacitor/filesystem";
 
 
 @Component({
@@ -30,7 +31,6 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private cameraId = 0;
-
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
@@ -70,7 +70,6 @@ export class HandDetectionComponent implements AfterViewInit {
     this.renderLoop();
   }
 
-
   private renderLoop(): void {
     if (this.isSwapped !== CameraSwapService.getCameraState()) {
       console.log("swap");
@@ -91,7 +90,7 @@ export class HandDetectionComponent implements AfterViewInit {
             // Convert landmarks to a deep copy of the array to avoid references
             this.previousPositions.push(this.filterData(detections.landmarks));
             if (this.previousPositions.length > this.MAX_POSITIONS) {
-              this.previousPositions.shift();
+              this.previousPositions.shift()
             }
             if (this.previousPositions.length === this.MAX_POSITIONS) {
               let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
@@ -102,8 +101,7 @@ export class HandDetectionComponent implements AfterViewInit {
                 this.previousPositions = [];
                 const data = this.filterData(detections.landmarks);
                 const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
-                const prediction = predictionValue as tf.Tensor<tf.Rank>;
-                console.log(prediction.dataSync());
+                const prediction = predictionValue as tf.Tensor<tf.Rank >;
                 this.evaluatePrediction(prediction.dataSync());
               } else if (difference > this.movementThreshold * 2) {
                 this.stopMoment = false;
