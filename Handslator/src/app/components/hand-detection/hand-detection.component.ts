@@ -5,7 +5,6 @@ import {TextStorageService} from "../../services/text-storage/text-storage.servi
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
 import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
-import {Directory, Encoding, Filesystem} from "@capacitor/filesystem";
 
 
 @Component({
