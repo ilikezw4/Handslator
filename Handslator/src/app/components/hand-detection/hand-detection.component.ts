@@ -225,7 +225,6 @@ export class HandDetectionComponent implements AfterViewInit {
   }
 
 
-  //TODO: fixing "OverconstrainedError" error on some phones (e.g. Samsung A51) ---> test on other phones
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
