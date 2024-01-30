@@ -5,7 +5,7 @@ import {TextStorageService} from "../../services/text-storage/text-storage.servi
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
 import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
-import {Directory, Encoding, Filesystem} from "@capacitor/filesystem";
+
 
 
 @Component({
@@ -31,6 +31,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private cameraId = 0;
+  private stream !: MediaStream;
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
@@ -42,7 +43,6 @@ export class HandDetectionComponent implements AfterViewInit {
       devices.forEach((device) => {
         if (device.kind === 'videoinput') {
           this.cameras.push(device.deviceId);
-
         }
       });
       const videoConstraints = {
@@ -54,7 +54,8 @@ export class HandDetectionComponent implements AfterViewInit {
       // Access the camera
       navigator.mediaDevices.getUserMedia(videoConstraints)
         .then(async (stream) => {
-          this.video.srcObject = stream;
+          this.stream = stream;
+          this.video.srcObject = this.stream;
           TextStorageService.setLastValue("Connecting.....");
           await this.initHandLandmarkDetection();
           TextStorageService.dropData()
@@ -101,7 +102,7 @@ export class HandDetectionComponent implements AfterViewInit {
                 this.previousPositions = [];
                 const data = this.filterData(detections.landmarks);
                 const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
-                const prediction = predictionValue as tf.Tensor<tf.Rank >;
+                const prediction = predictionValue as tf.Tensor<tf.Rank>;
                 this.evaluatePrediction(prediction.dataSync());
               } else if (difference > this.movementThreshold * 2) {
                 this.stopMoment = false;
@@ -215,27 +216,33 @@ export class HandDetectionComponent implements AfterViewInit {
   }
 
   private switchCamera() {
+    const tracks = this.stream.getTracks();
+    tracks.forEach(function (track) {
+      track.stop();
+    });
     this.video.srcObject = null;
     this.augmentCamera();
   }
 
 
-  //TODO: fixing "OverconstrainedError" error on some phones (e.g. Samsung A51)  ---> not tested yet
+  //TODO: fixing "OverconstrainedError" error on some phones (e.g. Samsung A51) ---> test on other phones
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
         this.cameraId = (this.cameraId + 1) % this.cameras.length;
         console.log(this.cameras[this.cameraId]);
         if (this.cameras[this.cameraId] !== undefined) {
+
           const videoConstraints = {
             video: {
-              deviceId: this.cameras[this.cameraId],
+              facingMode: 'environment', // Try to access the rear camera
             },
-            audio: false
+            audio: false,
           };
 
           // Access the camera
-          this.video.srcObject = await navigator.mediaDevices.getUserMedia(videoConstraints);
+          this.stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+          this.video.srcObject = this.stream;
           if (this.video.currentTime < this.lastVideoTime) {
             this.video.currentTime = this.lastVideoTime;
           }
@@ -261,6 +268,8 @@ export class HandDetectionComponent implements AfterViewInit {
           this.augmentCamera();
         }
       }
+    } else {
+      console.error('getUserMedia is not supported');
     }
   }
 
