@@ -1,11 +1,10 @@
-import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, ViewChild, Renderer2} from '@angular/core';
 import {FilesetResolver, HandLandmarker} from "@mediapipe/tasks-vision";
 import {HAND_CONNECTIONS, LandmarkConnectionArray, NormalizedLandmark} from "@mediapipe/hands";
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
 import * as tf from '@tensorflow/tfjs';
 import {CameraSwapService} from "../../services/swap-camera/camera-swap.service";
 import {RecognitionModelService} from "../../services/recognition-model/recognition-model.service";
-
 
 
 @Component({
@@ -30,8 +29,11 @@ export class HandDetectionComponent implements AfterViewInit {
   private stopMoment = false;
   private isSwapped!: boolean;
   private cameras: any[] = [];
-  private cameraId = 0;
   private stream !: MediaStream;
+
+
+  constructor(private renderer: Renderer2) {
+  }
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
@@ -39,10 +41,9 @@ export class HandDetectionComponent implements AfterViewInit {
     this.canvasContext = this.canvas.getContext('2d')!;
     if (navigator.mediaDevices.getUserMedia) {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log(devices)
       devices.forEach((device) => {
         if (device.kind === 'videoinput') {
-          this.cameras.push(device.deviceId);
+          this.cameras.push(device);
         }
       });
       const videoConstraints = {
@@ -79,11 +80,9 @@ export class HandDetectionComponent implements AfterViewInit {
     }
     if (this.video.srcObject) {
       if (this.video.currentTime !== this.lastVideoTime && this.video.currentTime > this.lastVideoTime) {
-        this.canvasContext.save(); // save state
-        this.canvas.width = this.video.videoWidth;
+        this.canvas.width = this.video.videoWidth
         this.canvas.height = this.video.videoHeight;
         this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
-        this.canvasContext.restore(); // restore to original state
 
         if (this.handLandmarker) {
           const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
@@ -228,43 +227,34 @@ export class HandDetectionComponent implements AfterViewInit {
   private async augmentCamera() {
     if (navigator.mediaDevices.getUserMedia) {
       try {
-        this.cameraId = (this.cameraId + 1) % this.cameras.length;
-        console.log(this.cameras[this.cameraId]);
-        if (this.cameras[this.cameraId] !== undefined) {
+        const videoConstraints = {
+          video: {
+            facingMode: (this.isSwapped) ? 'user' : 'environment', // user for front camera, environment for back camera
+            zoom: true,
+          },
+          audio: false,
+        };
 
-          const videoConstraints = {
-            video: {
-              facingMode: 'environment', // Try to access the rear camera
-            },
-            audio: false,
-          };
-
-          // Access the camera
-          this.stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
-          this.video.srcObject = this.stream;
-          if (this.video.currentTime < this.lastVideoTime) {
-            this.video.currentTime = this.lastVideoTime;
-          }
-        } else {
-          this.augmentCamera(); // try again
+        // Access the camera
+        this.stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+        this.video.srcObject = this.stream;
+        if (this.video.currentTime < this.lastVideoTime) {
+          this.video.currentTime = this.lastVideoTime;
         }
+
       } catch (err: any) {
         if (err.name === 'NotAllowedError') {
           // The user denied permission
           console.error('User denied camera access:', err);
-          this.augmentCamera();
         } else if (err.name === 'NotFoundError' || err.name === 'SourceUnavailableError') {
           // Camera not found or not available
           console.error('Camera not found or not available:', err);
-          this.augmentCamera();
         } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
           // Camera is not readable or track start error
           console.error('Camera not readable or track start error:', err);
-          this.augmentCamera();
         } else {
           // Handle other errors
           console.error('Camera error:', err);
-          this.augmentCamera();
         }
       }
     } else {
