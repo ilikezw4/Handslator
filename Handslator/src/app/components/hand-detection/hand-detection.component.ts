@@ -230,7 +230,6 @@ export class HandDetectionComponent implements AfterViewInit {
         const videoConstraints = {
           video: {
             facingMode: (this.isSwapped) ? 'user' : 'environment', // user for front camera, environment for back camera
-            zoom: true,
           },
           audio: false,
         };
