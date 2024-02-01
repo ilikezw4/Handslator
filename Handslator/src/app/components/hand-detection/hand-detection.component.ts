@@ -31,10 +31,6 @@ export class HandDetectionComponent implements AfterViewInit {
   private cameras: any[] = [];
   private stream !: MediaStream;
 
-
-  constructor(private renderer: Renderer2) {
-  }
-
   async ngAfterViewInit(): Promise<void> {
     this.canvas = this.canvasElement.nativeElement;
     this.video = this.videoElement.nativeElement;
