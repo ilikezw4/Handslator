@@ -64,56 +64,71 @@ export class HandDetectionComponent implements AfterViewInit {
         .catch((err) => console.error('Error accessing camera:', err));
     }
     this.isSwapped = CameraSwapService.getCameraState();
-    this.lastVideoTime = -1;
+    this.lastVideoTime = 0;
     this.renderLoop();
   }
 
   private renderLoop(): void {
+    this.detectHands();
+    requestAnimationFrame(() => {
+      this.renderLoop();
+    });
+  }
+
+  private detectHands(): void {
     if (this.isSwapped !== CameraSwapService.getCameraState()) {
       console.log("swap");
       this.isSwapped = CameraSwapService.getCameraState();
       this.switchCamera();
     }
-    if (this.video.srcObject) {
-      if (this.video.currentTime !== this.lastVideoTime && this.video.currentTime > this.lastVideoTime) {
-        this.canvas.width = this.video.videoWidth
-        this.canvas.height = this.video.videoHeight;
-        this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
 
-        if (this.handLandmarker) {
-          const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
-          if (detections.landmarks.length > 0) {
-            // Convert landmarks to a deep copy of the array to avoid references
-            this.previousPositions.push(this.filterData(detections.landmarks));
-            if (this.previousPositions.length > this.MAX_POSITIONS) {
-              this.previousPositions.shift()
-            }
-            if (this.previousPositions.length === this.MAX_POSITIONS) {
-              let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
-              let difference = Math.abs(differenceTensor.dataSync()[0]);
+    if (!this.video.srcObject) {
+      return;
+    }
 
-              if (difference < this.movementThreshold && !this.stopMoment) {
-                this.stopMoment = true;
-                this.previousPositions = [];
-                const data = this.filterData(detections.landmarks);
-                const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
-                const prediction = predictionValue as tf.Tensor<tf.Rank>;
-                this.evaluatePrediction(prediction.dataSync());
-              } else if (difference > this.movementThreshold * 2) {
-                this.stopMoment = false;
-              }
-            }
-            this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
-          }
-          this.lastVideoTime = this.video.currentTime;
-        }
-      } else {
-        this.video.currentTime = this.lastVideoTime;
+    if (!(this.video.currentTime !== this.lastVideoTime && this.video.currentTime > this.lastVideoTime)) {
+      this.video.currentTime = this.lastVideoTime;
+      return;
+    }
+
+    this.canvas.width = this.video.videoWidth
+    this.canvas.height = this.video.videoHeight;
+    this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
+
+    if (!this.handLandmarker) {
+      this.lastVideoTime = this.video.currentTime;
+      return;
+    }
+
+    const detections = this.handLandmarker.detectForVideo(this.video, this.lastVideoTime);
+    if (detections.landmarks.length <= 0) {
+      this.lastVideoTime = this.video.currentTime;
+      return;
+    }
+    // Convert landmarks to a deep copy of the array to avoid references
+    this.previousPositions.push(this.filterData(detections.landmarks));
+    if (this.previousPositions.length > this.MAX_POSITIONS) {
+      this.previousPositions.shift()
+    }
+
+    if (this.previousPositions.length === this.MAX_POSITIONS) {
+      let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
+      let difference = Math.abs(differenceTensor.dataSync()[0]);
+
+      if (difference < this.movementThreshold && !this.stopMoment) {
+        this.stopMoment = true;
+        this.previousPositions = [];
+        const data = this.filterData(detections.landmarks);
+        const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
+        const prediction = predictionValue as tf.Tensor<tf.Rank>;
+        this.evaluatePrediction(prediction.dataSync());
+      } else if (difference > this.movementThreshold * 2) {
+        this.stopMoment = false;
       }
     }
-    requestAnimationFrame(() => {
-      this.renderLoop();
-    });
+
+    this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
+    this.lastVideoTime = this.video.currentTime;
   }
 
   async initHandLandmarkDetection() {
