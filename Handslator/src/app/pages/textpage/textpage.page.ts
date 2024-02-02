@@ -1,6 +1,8 @@
 import {AfterViewInit, Component,} from '@angular/core';
 import {Clipboard} from '@capacitor/clipboard';
 import {TextStorageService} from "../../services/text-storage/text-storage.service";
+import {TextToSpeech} from "@ionic-native/text-to-speech/ngx";
+import { isPlatform } from '@ionic/angular';
 
 
 @Component({
@@ -35,16 +37,29 @@ export class TextpagePage implements AfterViewInit {
   }
 
   private async ttsButtonClick() {
-    // Create a SpeechSynthesisUtterance
-    const utterance = new SpeechSynthesisUtterance(TextStorageService.getFullText());
-
-    // Select a voice
-    const voices = speechSynthesis.getVoices();
-    utterance.voice = voices[0]; // Choose a specific voice
-
-    // Speak the text
-    speechSynthesis.speak(utterance);
+    if(isPlatform("mobile")){
+      console.log("Mobile");
+      const textToSpeech = new TextToSpeech();
+      textToSpeech.speak({
+        text: TextStorageService.getFullText(),
+        locale: 'de-DE',
+        rate: 0.9
+      })
+        .then(() =>
+          console.log('Done')
+        );
+    }else if(isPlatform("desktop")){
+      console.log("desktop")
+      // Create a SpeechSynthesisUtterance
+      const utterance = new SpeechSynthesisUtterance(TextStorageService.getFullText());
+      // Select a voice
+      const voices = speechSynthesis.getVoices();
+      utterance.voice = voices[1]; // Choose a specific voice
+      // Speak the text
+      speechSynthesis.speak(utterance);
+    }
   }
+
   private async clearButtonClick(){
     TextStorageService.dropData();
   }
