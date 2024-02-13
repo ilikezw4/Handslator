@@ -46,6 +46,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private stream !: MediaStream;
+  private whichHand !: any;
 
 
 // Functions **********************************************************************************************************
@@ -166,6 +167,7 @@ export class HandDetectionComponent implements AfterViewInit {
       return;
     }
 
+    this.whichHand = detections.handedness[0][0].categoryName;
     // add current coordinates to coordinate history (list)
     this.previousPositions.push(this.filterData(detections.landmarks));
     // check if list reached maximum length
@@ -316,6 +318,14 @@ export class HandDetectionComponent implements AfterViewInit {
       (landmarks[0][i].z.toString().includes('e')) ? filteredList.push(0) : filteredList.push((Math.round(landmarks[0][i].z * 1000))); // z
     }
 
+    if(this.whichHand === "Left") {
+      filteredList.map((value, index) => {
+        if (index % 3 === 0) {
+          filteredList[index] = -value + this.canvas.width;
+        }
+      })
+    }
+
     const basecoordX = filteredList[0];
     const basecoordY = filteredList[1];
 
@@ -323,6 +333,7 @@ export class HandDetectionComponent implements AfterViewInit {
       filteredList[i] = (filteredList[i] - basecoordX);
       filteredList[i + 1] = (filteredList[i + 1] - basecoordY);
     }
+
     // return the normalized list
     return this.normalize(filteredList);
   }
@@ -411,13 +422,13 @@ export class HandDetectionComponent implements AfterViewInit {
     }
   }
 
-/**
- **********************************************************************************************************************
- * @Description: This function is responsible for evaluating the prediction of the recognition model
- * @param prediction - the prediction of the recognition model
- * @private
- **********************************************************************************************************************
- */
+  /**
+   **********************************************************************************************************************
+   * @Description: This function is responsible for evaluating the prediction of the recognition model
+   * @param prediction - the prediction of the recognition model
+   * @private
+   **********************************************************************************************************************
+   */
   private evaluatePrediction(prediction: Float32Array | Int32Array | Uint8Array) {
     const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"];
     const maxIndex = prediction.indexOf(Math.max(...prediction));
