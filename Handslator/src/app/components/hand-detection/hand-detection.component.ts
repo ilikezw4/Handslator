@@ -46,7 +46,15 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private stream !: MediaStream;
-  private whichHand !: any;
+  private whichHand !: string;
+
+  // for moved sings only
+  private framesAfterRecognition: number = 20;
+  private savedCoords: number[][] = [];
+  private changedValues: any[] = [];
+  private counter = 0;
+  private timer = 0;
+  private checkMoving: boolean = false;
 
 
 // Functions **********************************************************************************************************
@@ -150,7 +158,8 @@ export class HandDetectionComponent implements AfterViewInit {
     // set canvas properties
     this.canvas.width = this.video.videoWidth
     this.canvas.height = this.video.videoHeight;
-    this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
+    if(this.isSwapped) this.canvasContext.scale(-1, 1); // flip the canvas (mirror effect)
+    this.canvasContext.drawImage(this.video, 0, 0, (this.isSwapped) ? -this.canvas.width : this.canvas.width, this.canvas.height); // draw the video frame to canvas
 
     // check if mediapipe is initialized
     if (!this.handLandmarker) {
@@ -177,7 +186,7 @@ export class HandDetectionComponent implements AfterViewInit {
     }
 
     // check if list is full
-    if (this.previousPositions.length === this.MAX_POSITIONS) {
+    if (this.previousPositions.length === this.MAX_POSITIONS || !this.checkMoving) {
       // calculate the mean of all hand positions in the history list
       let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
       // calculate the difference between the current hand position and the mean
@@ -190,18 +199,27 @@ export class HandDetectionComponent implements AfterViewInit {
         this.previousPositions = [];
         // filter data
         const data = this.filterData(detections.landmarks);
+        console.log(data);
         // predict data with the recognition model
         const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
         // tell typescript that predictionValue is a tensor
         const prediction = predictionValue as tf.Tensor<tf.Rank>;
         // evaluate prediction ( predictionValue --> letter )
-        this.evaluatePrediction(prediction.dataSync());
+        const predictedLetter = this.evaluatePrediction(prediction.dataSync());
+
+        // if(predictedLetter === "I"){
+        //   this.checkMoving = true;
+        // }
 
         // check if hand has moved again ---> reset stopMoment
       } else if (difference > this.movementThreshold * 2) {
         this.stopMoment = false;
       }
     }
+
+    // if(this.checkMoving){
+    //   this.calculateMovedSign(this.filterData(detections.landmarks));
+    // }
 
     // draw the hand landmarks
     this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
@@ -278,10 +296,12 @@ export class HandDetectionComponent implements AfterViewInit {
           const end = this.getLandmarkPosition(endPoint);
 
           // Draw lines between the landmarks
+          if(this.isSwapped) this.canvasContext.scale(-1, 1);
           this.canvasContext.beginPath();
-          this.canvasContext.moveTo(start.x, start.y);
-          this.canvasContext.lineTo(end.x, end.y);
+          this.canvasContext.moveTo((!this.isSwapped) ? start.x : -start.x + this.canvas.width, start.y);
+          this.canvasContext.lineTo((!this.isSwapped) ? end.x : -end.x + this.canvas.width, end.y);
           this.canvasContext.stroke();
+          if(this.isSwapped) this.canvasContext.scale(-1, 1);
         }
       });
     }
@@ -430,9 +450,19 @@ export class HandDetectionComponent implements AfterViewInit {
    **********************************************************************************************************************
    */
   private evaluatePrediction(prediction: Float32Array | Int32Array | Uint8Array) {
-    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"];
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
     const maxIndex = prediction.indexOf(Math.max(...prediction));
     TextStorageService.setLastValue(letters[maxIndex]);
+    return letters[maxIndex];
+  }
+
+  private calculateMovedSign(data: number[]){
+    if(this.timer <= this.framesAfterRecognition) {
+      this.savedCoords[this.timer] = data;
+
+    }
+
+
   }
 
 }
