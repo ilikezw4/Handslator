@@ -47,6 +47,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private cameras: any[] = [];
   private stream !: MediaStream;
   private whichHand !: string;
+  private counter: number = 0;
 
   // for moved sings only
   private checkJ: boolean = false;
@@ -167,6 +168,8 @@ export class HandDetectionComponent implements AfterViewInit {
 
     // check if hands were detected
     if (detections.landmarks.length <= 0) {
+      this.counter++;
+      console.log(this.counter);
       this.lastVideoTime = this.video.currentTime;
       return;
     }
@@ -213,7 +216,7 @@ export class HandDetectionComponent implements AfterViewInit {
         (predictedLetter === "I")? this.checkJ = true : this.checkJ = false;
 
 
-        // check if hand has moved again ---> reset stopMomentSetu
+        // check if hand has moved again ---> reset stopMoment
       } else if (difference > this.movementThreshold * 2) {
         this.stopMoment = false;
       }
@@ -448,11 +451,15 @@ export class HandDetectionComponent implements AfterViewInit {
    **********************************************************************************************************************
    */
   private evaluatePrediction(prediction: Float32Array | Int32Array | Uint8Array) {
+    //TODO: add letter "J" to the model
     const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
     const maxIndex = prediction.indexOf(Math.max(...prediction));
-    TextStorageService.setLastValue(letters[maxIndex]);
+    //add 3 spaces after not detecting anything for 50 frames
+    (this.counter < 50) ? TextStorageService.setLastValue(letters[maxIndex]) : TextStorageService.setLastValue(`   ${letters[maxIndex]}`);
+    this.counter = 0;
     return letters[maxIndex];
   }
+
 }
 
 
