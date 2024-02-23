@@ -68,6 +68,11 @@ export class TextStorageService {
       TextStorageService.text = "";
     }
   }
+  public static dropLastLetter() {
+    if (TextStorageService.instance) {
+      TextStorageService.text = TextStorageService.text.substring(0,TextStorageService.text.length-1);
+    }
+  }
 
   public static setMaxTextLength(length: number) {
     TextStorageService.shortTextLength = length;
