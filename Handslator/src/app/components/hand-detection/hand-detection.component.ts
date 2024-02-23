@@ -49,11 +49,6 @@ export class HandDetectionComponent implements AfterViewInit {
   private whichHand !: string;
 
   // for moved sings only
-  private framesAfterRecognition: number = 20;
-  private savedCoords: number[][] = [];
-  private changedValues: any[] = [];
-  private counter = 0;
-  private timer = 0;
   private checkMoving: boolean = false;
 
 
@@ -217,10 +212,6 @@ export class HandDetectionComponent implements AfterViewInit {
       }
     }
 
-    // if(this.checkMoving){
-    //   this.calculateMovedSign(this.filterData(detections.landmarks));
-    // }
-
     // draw the hand landmarks
     this.drawConnections(detections.landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
     // set new timestamp
@@ -236,7 +227,7 @@ export class HandDetectionComponent implements AfterViewInit {
     // set the wasm path
     const vision = await FilesetResolver.forVisionTasks(
       // path/to/wasm/root
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm",
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.9/wasm",
     );
 
     // initialize mediapipe hand detection
@@ -454,15 +445,6 @@ export class HandDetectionComponent implements AfterViewInit {
     const maxIndex = prediction.indexOf(Math.max(...prediction));
     TextStorageService.setLastValue(letters[maxIndex]);
     return letters[maxIndex];
-  }
-
-  private calculateMovedSign(data: number[]){
-    if(this.timer <= this.framesAfterRecognition) {
-      this.savedCoords[this.timer] = data;
-
-    }
-
-
   }
 
 }
