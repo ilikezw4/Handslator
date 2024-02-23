@@ -49,7 +49,7 @@ export class HandDetectionComponent implements AfterViewInit {
   private whichHand !: string;
 
   // for moved sings only
-  private checkMoving: boolean = false;
+  private checkJ: boolean = false;
 
 
 // Functions **********************************************************************************************************
@@ -153,7 +153,7 @@ export class HandDetectionComponent implements AfterViewInit {
     // set canvas properties
     this.canvas.width = this.video.videoWidth
     this.canvas.height = this.video.videoHeight;
-    if(this.isSwapped) this.canvasContext.scale(-1, 1); // flip the canvas (mirror effect)
+    if (this.isSwapped) this.canvasContext.scale(-1, 1); // flip the canvas (mirror effect)
     this.canvasContext.drawImage(this.video, 0, 0, (this.isSwapped) ? -this.canvas.width : this.canvas.width, this.canvas.height); // draw the video frame to canvas
 
     // check if mediapipe is initialized
@@ -181,7 +181,7 @@ export class HandDetectionComponent implements AfterViewInit {
     }
 
     // check if list is full
-    if (this.previousPositions.length === this.MAX_POSITIONS || !this.checkMoving) {
+    if (this.previousPositions.length === this.MAX_POSITIONS || !this.checkJ) {
       // calculate the mean of all hand positions in the history list
       let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
       // calculate the difference between the current hand position and the mean
@@ -193,8 +193,10 @@ export class HandDetectionComponent implements AfterViewInit {
         // clear history
         this.previousPositions = [];
         // filter data
-        const data = this.filterData(detections.landmarks);
+        let data = this.filterData(detections.landmarks);
         console.log(data);
+
+
         // predict data with the recognition model
         const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
         // tell typescript that predictionValue is a tensor
@@ -202,11 +204,16 @@ export class HandDetectionComponent implements AfterViewInit {
         // evaluate prediction ( predictionValue --> letter )
         const predictedLetter = this.evaluatePrediction(prediction.dataSync());
 
-        // if(predictedLetter === "I"){
-        //   this.checkMoving = true;
-        // }
+        if(predictedLetter === "J" && this.checkJ){
+          TextStorageService.dropLastLetter(); // remove last letter (I)
+          TextStorageService.setLastValue("J");
+          this.checkJ = false;
+        }
 
-        // check if hand has moved again ---> reset stopMoment
+        (predictedLetter === "I")? this.checkJ = true : this.checkJ = false;
+
+
+        // check if hand has moved again ---> reset stopMomentSetu
       } else if (difference > this.movementThreshold * 2) {
         this.stopMoment = false;
       }
@@ -287,12 +294,12 @@ export class HandDetectionComponent implements AfterViewInit {
           const end = this.getLandmarkPosition(endPoint);
 
           // Draw lines between the landmarks
-          if(this.isSwapped) this.canvasContext.scale(-1, 1);
+          if (this.isSwapped) this.canvasContext.scale(-1, 1);
           this.canvasContext.beginPath();
           this.canvasContext.moveTo((!this.isSwapped) ? start.x : -start.x + this.canvas.width, start.y);
           this.canvasContext.lineTo((!this.isSwapped) ? end.x : -end.x + this.canvas.width, end.y);
           this.canvasContext.stroke();
-          if(this.isSwapped) this.canvasContext.scale(-1, 1);
+          if (this.isSwapped) this.canvasContext.scale(-1, 1);
         }
       });
     }
@@ -329,7 +336,7 @@ export class HandDetectionComponent implements AfterViewInit {
       (landmarks[0][i].z.toString().includes('e')) ? filteredList.push(0) : filteredList.push((Math.round(landmarks[0][i].z * 1000))); // z
     }
 
-    if(this.whichHand === "Left") {
+    if (this.whichHand === "Left") {
       filteredList.map((value, index) => {
         if (index % 3 === 0) {
           filteredList[index] = -value + this.canvas.width;
@@ -446,7 +453,6 @@ export class HandDetectionComponent implements AfterViewInit {
     TextStorageService.setLastValue(letters[maxIndex]);
     return letters[maxIndex];
   }
-
 }
 
 
