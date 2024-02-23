@@ -46,6 +46,10 @@ export class HandDetectionComponent implements AfterViewInit {
   private isSwapped!: boolean;
   private cameras: any[] = [];
   private stream !: MediaStream;
+  private whichHand !: string;
+
+  // for moved sings only
+  private checkMoving: boolean = false;
 
 
 // Functions **********************************************************************************************************
@@ -149,7 +153,8 @@ export class HandDetectionComponent implements AfterViewInit {
     // set canvas properties
     this.canvas.width = this.video.videoWidth
     this.canvas.height = this.video.videoHeight;
-    this.canvasContext.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height); // draw the video frame to canvas
+    if(this.isSwapped) this.canvasContext.scale(-1, 1); // flip the canvas (mirror effect)
+    this.canvasContext.drawImage(this.video, 0, 0, (this.isSwapped) ? -this.canvas.width : this.canvas.width, this.canvas.height); // draw the video frame to canvas
 
     // check if mediapipe is initialized
     if (!this.handLandmarker) {
@@ -166,6 +171,7 @@ export class HandDetectionComponent implements AfterViewInit {
       return;
     }
 
+    this.whichHand = detections.handedness[0][0].categoryName;
     // add current coordinates to coordinate history (list)
     this.previousPositions.push(this.filterData(detections.landmarks));
     // check if list reached maximum length
@@ -175,7 +181,7 @@ export class HandDetectionComponent implements AfterViewInit {
     }
 
     // check if list is full
-    if (this.previousPositions.length === this.MAX_POSITIONS) {
+    if (this.previousPositions.length === this.MAX_POSITIONS || !this.checkMoving) {
       // calculate the mean of all hand positions in the history list
       let differenceTensor = tf.tensor(this.previousPositions).sub(tf.tensor(this.previousPositions[0])).abs().mean();
       // calculate the difference between the current hand position and the mean
@@ -188,12 +194,17 @@ export class HandDetectionComponent implements AfterViewInit {
         this.previousPositions = [];
         // filter data
         const data = this.filterData(detections.landmarks);
+        console.log(data);
         // predict data with the recognition model
         const predictionValue = RecognitionModelService.predict(tf.tensor([data]));
         // tell typescript that predictionValue is a tensor
         const prediction = predictionValue as tf.Tensor<tf.Rank>;
         // evaluate prediction ( predictionValue --> letter )
-        this.evaluatePrediction(prediction.dataSync());
+        const predictedLetter = this.evaluatePrediction(prediction.dataSync());
+
+        // if(predictedLetter === "I"){
+        //   this.checkMoving = true;
+        // }
 
         // check if hand has moved again ---> reset stopMoment
       } else if (difference > this.movementThreshold * 2) {
@@ -216,7 +227,7 @@ export class HandDetectionComponent implements AfterViewInit {
     // set the wasm path
     const vision = await FilesetResolver.forVisionTasks(
       // path/to/wasm/root
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm",
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.9/wasm",
     );
 
     // initialize mediapipe hand detection
@@ -276,10 +287,12 @@ export class HandDetectionComponent implements AfterViewInit {
           const end = this.getLandmarkPosition(endPoint);
 
           // Draw lines between the landmarks
+          if(this.isSwapped) this.canvasContext.scale(-1, 1);
           this.canvasContext.beginPath();
-          this.canvasContext.moveTo(start.x, start.y);
-          this.canvasContext.lineTo(end.x, end.y);
+          this.canvasContext.moveTo((!this.isSwapped) ? start.x : -start.x + this.canvas.width, start.y);
+          this.canvasContext.lineTo((!this.isSwapped) ? end.x : -end.x + this.canvas.width, end.y);
           this.canvasContext.stroke();
+          if(this.isSwapped) this.canvasContext.scale(-1, 1);
         }
       });
     }
@@ -316,6 +329,14 @@ export class HandDetectionComponent implements AfterViewInit {
       (landmarks[0][i].z.toString().includes('e')) ? filteredList.push(0) : filteredList.push((Math.round(landmarks[0][i].z * 1000))); // z
     }
 
+    if(this.whichHand === "Left") {
+      filteredList.map((value, index) => {
+        if (index % 3 === 0) {
+          filteredList[index] = -value + this.canvas.width;
+        }
+      })
+    }
+
     const basecoordX = filteredList[0];
     const basecoordY = filteredList[1];
 
@@ -323,6 +344,7 @@ export class HandDetectionComponent implements AfterViewInit {
       filteredList[i] = (filteredList[i] - basecoordX);
       filteredList[i + 1] = (filteredList[i + 1] - basecoordY);
     }
+
     // return the normalized list
     return this.normalize(filteredList);
   }
@@ -411,17 +433,18 @@ export class HandDetectionComponent implements AfterViewInit {
     }
   }
 
-/**
- **********************************************************************************************************************
- * @Description: This function is responsible for evaluating the prediction of the recognition model
- * @param prediction - the prediction of the recognition model
- * @private
- **********************************************************************************************************************
- */
+  /**
+   **********************************************************************************************************************
+   * @Description: This function is responsible for evaluating the prediction of the recognition model
+   * @param prediction - the prediction of the recognition model
+   * @private
+   **********************************************************************************************************************
+   */
   private evaluatePrediction(prediction: Float32Array | Int32Array | Uint8Array) {
-    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"];
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
     const maxIndex = prediction.indexOf(Math.max(...prediction));
     TextStorageService.setLastValue(letters[maxIndex]);
+    return letters[maxIndex];
   }
 
 }
