@@ -324,8 +324,8 @@ export class HandDetectionComponent implements AfterViewInit {
   /**
    **********************************************************************************************************************
    * @Description This is a function to make the filter Data have less recursive code
-   *
-   *
+   * @param coord coordinate as number or string
+   * @private
    **********************************************************************************************************************
    */
   private landmarkFilterCompact(coord: number | string): number {
