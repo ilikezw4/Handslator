@@ -323,6 +323,17 @@ export class HandDetectionComponent implements AfterViewInit {
 
   /**
    **********************************************************************************************************************
+   * @Description This is a function to make the filter Data have less recursive code
+   *
+   *
+   **********************************************************************************************************************
+   */
+  private landmarkFilterCompact(coord: number | string): number {
+    return typeof coord === 'string' && coord.includes('e') ? 0 : Math.round(Number(coord) * 1000);
+  }
+
+  /**
+   **********************************************************************************************************************
    * @Description: This function is responsible for filtering the detected landmarks
    * @param landmarks - the detected landmarks
    * @private
@@ -333,10 +344,9 @@ export class HandDetectionComponent implements AfterViewInit {
     let filteredList: number[] = [];
     // iterate through the landmarks
     for (let i = 0; i < landmarks[0].length; i++) {
-      // check if number is too small and replace it with 0, else multiply it by 1000 and round it to an integer
-      (landmarks[0][i].x.toString().includes('e')) ? filteredList.push(0) : filteredList.push((Math.round(landmarks[0][i].x * 1000))); // x
-      (landmarks[0][i].y.toString().includes('e')) ? filteredList.push(0) : filteredList.push((Math.round(landmarks[0][i].y * 1000))); // y
-      (landmarks[0][i].z.toString().includes('e')) ? filteredList.push(0) : filteredList.push((Math.round(landmarks[0][i].z * 1000))); // z
+      filteredList.push(this.landmarkFilterCompact(landmarks[0][i].x)); // x
+      filteredList.push(this.landmarkFilterCompact(landmarks[0][i].y)); // y
+      filteredList.push(this.landmarkFilterCompact(landmarks[0][i].z));
     }
 
     if (this.whichHand === "Left") {
