@@ -461,8 +461,7 @@ export class HandDetectionComponent implements AfterViewInit {
    **********************************************************************************************************************
    */
   private evaluatePrediction(prediction: Float32Array | Int32Array | Uint8Array) {
-    //TODO: add letter "J" to the model
-    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
     const maxIndex = prediction.indexOf(Math.max(...prediction));
     //add 3 spaces after not detecting anything for 50 frames
     (this.counter < 50) ? TextStorageService.setLastValue(letters[maxIndex]) : TextStorageService.setLastValue(`   ${letters[maxIndex]}`);
