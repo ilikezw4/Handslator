@@ -464,7 +464,9 @@ export class HandDetectionComponent implements AfterViewInit {
     const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
     const maxIndex = prediction.indexOf(Math.max(...prediction));
     //add 3 spaces after not detecting anything for 50 frames
+    if(letters[maxIndex] !== "J"){
     (this.counter < 50) ? TextStorageService.setLastValue(letters[maxIndex]) : TextStorageService.setLastValue(`   ${letters[maxIndex]}`);
+    }
     this.counter = 0;
     return letters[maxIndex];
   }
