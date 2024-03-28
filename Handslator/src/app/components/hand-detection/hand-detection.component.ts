@@ -93,16 +93,16 @@ export class HandDetectionComponent implements AfterViewInit {
           this.stream = stream;
           // set video source to camera stream
           this.video.srcObject = this.stream;
-          TextStorageService.setLastValue("Connecting.....");
+          TextStorageService.getInstance().setLastValue("Connecting.....");
           // initialize mediapipe hand detection
           await this.initHandLandmarkDetection();
-          TextStorageService.dropData()
-          TextStorageService.setLastValue("Loading model.....");
+          TextStorageService.getInstance().dropData()
+          TextStorageService.getInstance().setLastValue("Loading model.....");
           // load recognition model
           await RecognitionModelService.loadLayersModel();
-          TextStorageService.dropData();
+          TextStorageService.getInstance().dropData();
           // reset text-size for compatibility with phones
-          TextStorageService.setMaxTextLength(10);
+          TextStorageService.getInstance().setMaxTextLength(10);
         })
         .catch((err) => console.error('Error accessing camera:', err));
     }
@@ -208,8 +208,8 @@ export class HandDetectionComponent implements AfterViewInit {
         const predictedLetter = this.evaluatePrediction(prediction.dataSync());
 
         if(predictedLetter === "J" && this.checkJ){
-          TextStorageService.dropLastLetter(); // remove last letter (I)
-          TextStorageService.setLastValue("J");
+          TextStorageService.getInstance().dropLastLetter(); // remove last letter (I)
+          TextStorageService.getInstance().setLastValue("J");
           this.checkJ = false;
         }
 
@@ -465,7 +465,7 @@ export class HandDetectionComponent implements AfterViewInit {
     const maxIndex = prediction.indexOf(Math.max(...prediction));
     //add 3 spaces after not detecting anything for 50 frames
     if(letters[maxIndex] !== "J"){
-    (this.counter < 50) ? TextStorageService.setLastValue(letters[maxIndex]) : TextStorageService.setLastValue(`   ${letters[maxIndex]}`);
+    (this.counter < 50) ? TextStorageService.getInstance().setLastValue(letters[maxIndex]) : TextStorageService.getInstance().setLastValue(`   ${letters[maxIndex]}`);
     }
     this.counter = 0;
     return letters[maxIndex];

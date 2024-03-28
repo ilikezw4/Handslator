@@ -32,7 +32,7 @@ export class TextpagePage implements AfterViewInit {
 
   private async copyButtonClick() {
     await Clipboard.write({
-      string: TextStorageService.getFullText()
+      string: TextStorageService.getInstance().getFullText()
     });
   }
 
@@ -41,7 +41,7 @@ export class TextpagePage implements AfterViewInit {
       console.log("Mobile");
       const textToSpeech = new TextToSpeech();
       textToSpeech.speak({
-        text: TextStorageService.getFullText(),
+        text: TextStorageService.getInstance().getFullText(),
         locale: 'de-DE',
         rate: 0.9
       })
@@ -51,7 +51,7 @@ export class TextpagePage implements AfterViewInit {
     }else if(isPlatform("desktop")){
       console.log("desktop")
       // Create a SpeechSynthesisUtterance
-      const utterance = new SpeechSynthesisUtterance(TextStorageService.getFullText());
+      const utterance = new SpeechSynthesisUtterance(TextStorageService.getInstance().getFullText());
       // Select a voice
       const voices = speechSynthesis.getVoices();
       utterance.voice = voices[1]; // Choose a specific voice
@@ -61,7 +61,7 @@ export class TextpagePage implements AfterViewInit {
   }
 
   private async clearButtonClick(){
-    TextStorageService.dropData();
+    TextStorageService.getInstance().dropData();
   }
 }
 

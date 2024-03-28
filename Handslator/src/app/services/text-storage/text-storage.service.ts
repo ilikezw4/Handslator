@@ -14,23 +14,29 @@ import {Injectable} from '@angular/core';
 
 export class TextStorageService {
   private static instance: TextStorageService;
-  private static text: string;
-  private static shortTextLength: number = 20;
+  private text: string;
+  private shortTextLength: number = 20;
 
   private constructor() {
-    TextStorageService.text = "";
+    this.text = "";
   }
 
+  public static getInstance():TextStorageService{
+    if(!TextStorageService.instance){
+      TextStorageService.instance = new TextStorageService();
+    }
+    return TextStorageService.instance;
+  }
   /**
    * @getFullText
    * returns the full text
    * will be used in the text output page
    */
-  public static getFullText(): string {
-    if (!TextStorageService.instance || TextStorageService.text == "") {
+  public getFullText(): string {
+    if (this.text == "") {
       return "Noch keine Buchstaben erkannt";
     }
-    return TextStorageService.text;
+    return this.text;
   }
 
   /**
@@ -38,43 +44,38 @@ export class TextStorageService {
    * returns the shortened version of the text
    * will be used in the text component
    */
-  public static getShortText(): string {
-    if (!TextStorageService.instance || TextStorageService.text == "") {
+  public getShortText(): string {
+    if (this.text == "") {
       return "Zeige deine Hand";
     }
-    if (TextStorageService.text.length > TextStorageService.shortTextLength + 3) {
-      return ("..." + TextStorageService.text.slice(TextStorageService.text.length - TextStorageService.shortTextLength, TextStorageService.text.length));
+    if (this.text.length > this.shortTextLength + 3) {
+      return ("..." + this.text.slice(this.text.length - this.shortTextLength, this.text.length));
     }
-    return TextStorageService.text;
+    return this.text;
   }
 
   /**
    * @setLastValue
    * adds a new value to the String
    */
-  public static setLastValue(value: string) {
-    if (!TextStorageService.instance) {
-      TextStorageService.instance = new TextStorageService();
-    }
-    TextStorageService.text = TextStorageService.text.concat(value)
+  public setLastValue(value: string) {
+    this.text = this.text.concat(value)
   }
 
   /**
    * @dropData
    * deletes previous Data.
    */
-  public static dropData() {
+  public dropData() {
     if (TextStorageService.instance) {
-      TextStorageService.text = "";
+      this.text = "";
     }
   }
-  public static dropLastLetter() {
-    if (TextStorageService.instance) {
-      TextStorageService.text = TextStorageService.text.substring(0,TextStorageService.text.length-1);
-    }
+  public dropLastLetter() {
+    this.text = this.text.substring(0,this.text.length-1);
   }
 
-  public static setMaxTextLength(length: number) {
-    TextStorageService.shortTextLength = length;
+  public setMaxTextLength(length: number) {
+    this.shortTextLength = length;
   }
 }
