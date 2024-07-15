@@ -1,0 +1,33 @@
+int framesAfterRecog = 20 //Weil 20 Frames eine Sekunde sind und ungefähr so lange die Drehung dauert
+int timer = 0
+arr[][] savedCoords = new arr[][]
+
+arr[] changeValues = [2,2,2,...] //From Other Files below
+int counter = 0
+isMovedLetter = False
+
+recognizeHand:  // -> Loops
+	isStill:
+		getLetter:
+			if(Letter==I):
+				checkMoving = true
+	if(checkMoving && (timer <= framesAfterRecog)):
+		savedCoords[timer] = currentCoords
+		
+	elseif(checkMoving && (timer > framesAfterRecog)):
+		checkMoving = false
+		for i in range(0,62):
+			if(((savedCoords[savedCoords.length()-1][i] - savedCoords[0][i]) > (changeValues[i] - 10)) II ((savedCoords[savedCoords.length()-1][i] - savedCoords[0][i]) < (changeValues[i] + 10)))	//Hier muss man feineinstellung machen	
+				counter += 1	
+		
+		if(counter > 41):
+			isMovedLetter = True
+		
+		counter = 0
+	if(isMovedLetter)	
+		return chr(74)
+		isMovedLetter = False
+	else:
+		isMovedLetter = False
+		
+	timer += 1

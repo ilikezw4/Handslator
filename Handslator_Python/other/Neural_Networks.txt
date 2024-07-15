@@ -1,0 +1,20 @@
+Input Layer
+
+Channels have WEIGHT
+
+=> (Inputs * Weight + Inputs * Weight) + Bias of hidden Layers => Activation Function (Determines if Neuron gets activated or not) => Activated Neurons Transmit data to next Layer
+
+Hidden Layer
+
+Output Layer
+
+Activation Function
+
+=> Hidden Layer => ELU or Leaky Relu
+
+=> Output => Softmax
+
+Problem with RELU at negative Numbers the Neurons die and there is no Learning
+
+Problem with Sigmoid squeezes numbers into -1 to 1 so Gradient get very low at these numbers and at Backward Propagation these eventually become 0
+
